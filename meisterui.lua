@@ -313,6 +313,7 @@ function MeisterUI:CreateWindow(options)
     MainTitle.TextSize = 18
     MainTitle.TextXAlignment = Enum.TextXAlignment.Left
     MainTitle.TextYAlignment = Enum.TextYAlignment.Center
+    MainTitle.TextTruncate = Enum.TextTruncate.AtEnd
 
     local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
