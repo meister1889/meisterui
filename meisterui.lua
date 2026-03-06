@@ -213,7 +213,7 @@ function MeisterUI:CreateWindow(options)
     IntroTitle.BackgroundTransparency = 1
     IntroTitle.Position = UDim2.new(0.5, -300, 0.5, -50)
     IntroTitle.Size = UDim2.new(0, 600, 0, 100)
-    IntroTitle.Image = "rbxthumb://type=Asset&id=129783995741936&w=420&h=420"
+    IntroTitle.Image = "rbxassetid://129783995741936"
     IntroTitle.ScaleType = Enum.ScaleType.Fit
     IntroTitle.ImageTransparency = 1
 
@@ -255,7 +255,8 @@ function MeisterUI:CreateWindow(options)
     Sidebar.Name = "Sidebar"
     Sidebar.Parent = MainFrame
     Sidebar.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
-    Sidebar.Size = UDim2.new(0, 180, 1, 0)
+    Sidebar.Position = UDim2.new(0, 0, 0, 35)
+    Sidebar.Size = UDim2.new(0, 180, 1, -35)
     Sidebar.BorderSizePixel = 0
     Sidebar.ClipsDescendants = true
     
@@ -270,6 +271,13 @@ function MeisterUI:CreateWindow(options)
     SidebarFix.Size = UDim2.new(0, 10, 1, 0)
     SidebarFix.BorderSizePixel = 0
 
+    local SidebarFixTop = Instance.new("Frame")
+    SidebarFixTop.Parent = Sidebar
+    SidebarFixTop.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
+    SidebarFixTop.Position = UDim2.new(0, 0, 0, 0)
+    SidebarFixTop.Size = UDim2.new(1, 0, 0, 10)
+    SidebarFixTop.BorderSizePixel = 0
+
     local SidebarDivider = Instance.new("Frame")
     SidebarDivider.Parent = Sidebar
     SidebarDivider.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
@@ -280,8 +288,29 @@ function MeisterUI:CreateWindow(options)
     local Topbar = Instance.new("Frame")
     Topbar.Name = "Topbar"
     Topbar.Parent = MainFrame
-    Topbar.BackgroundTransparency = 1
-    Topbar.Size = UDim2.new(1, 0, 0, 40)
+    Topbar.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
+    Topbar.Size = UDim2.new(1, 0, 0, 35)
+    Topbar.BorderSizePixel = 0
+    Topbar.ZIndex = 5
+    
+    local TopbarCorner = Instance.new("UICorner")
+    TopbarCorner.CornerRadius = UDim.new(0, 10)
+    TopbarCorner.Parent = Topbar
+    
+    local TopbarFix = Instance.new("Frame")
+    TopbarFix.Parent = Topbar
+    TopbarFix.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
+    TopbarFix.Position = UDim2.new(0, 0, 1, -10)
+    TopbarFix.Size = UDim2.new(1, 0, 0, 10)
+    TopbarFix.BorderSizePixel = 0
+
+    local TopbarDivider = Instance.new("Frame")
+    TopbarDivider.Parent = Topbar
+    TopbarDivider.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    TopbarDivider.Position = UDim2.new(0, 0, 1, -1)
+    TopbarDivider.Size = UDim2.new(1, 0, 0, 1)
+    TopbarDivider.BorderSizePixel = 0
+
     Utility:MakeDraggable(Topbar, MainFrame)
     
     local CloseBtn = Instance.new("TextButton")
@@ -303,14 +332,14 @@ function MeisterUI:CreateWindow(options)
     end)
 
     local MainTitle = Instance.new("TextLabel")
-    MainTitle.Parent = Sidebar
+    MainTitle.Parent = Topbar
     MainTitle.BackgroundTransparency = 1
-    MainTitle.Position = UDim2.new(0, 20, 0, 0)
-    MainTitle.Size = UDim2.new(1, -40, 0, 40)
+    MainTitle.Position = UDim2.new(0, 15, 0, 0)
+    MainTitle.Size = UDim2.new(1, -60, 1, 0)
     MainTitle.Font = Enum.Font.Ubuntu
     MainTitle.Text = WindowName
     MainTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MainTitle.TextSize = 18
+    MainTitle.TextSize = 14
     MainTitle.TextXAlignment = Enum.TextXAlignment.Left
     MainTitle.TextYAlignment = Enum.TextYAlignment.Center
     MainTitle.TextTruncate = Enum.TextTruncate.AtEnd
@@ -320,8 +349,8 @@ function MeisterUI:CreateWindow(options)
     TabContainer.Parent = Sidebar
     TabContainer.Active = true
     TabContainer.BackgroundTransparency = 1
-    TabContainer.Position = UDim2.new(0, 0, 0, 60)
-    TabContainer.Size = UDim2.new(1, 0, 1, -130)
+    TabContainer.Position = UDim2.new(0, 0, 0, 10)
+    TabContainer.Size = UDim2.new(1, 0, 1, -80)
     TabContainer.ScrollBarThickness = 0
     
     local TabList = Instance.new("UIListLayout")
@@ -410,8 +439,8 @@ function MeisterUI:CreateWindow(options)
     ContentArea.Name = "ContentArea"
     ContentArea.Parent = MainFrame
     ContentArea.BackgroundTransparency = 1
-    ContentArea.Position = UDim2.new(0, 181, 0, 40)
-    ContentArea.Size = UDim2.new(1, -181, 1, -40)
+    ContentArea.Position = UDim2.new(0, 181, 0, 35)
+    ContentArea.Size = UDim2.new(1, -181, 1, -35)
 
     task.spawn(function()
         -- 1. Full black screen fade in
@@ -472,13 +501,13 @@ function MeisterUI:CreateWindow(options)
             closeTween.Completed:Connect(function()
                 if not WindowOpen then MainFrame.Visible = false end
             end)
+            MeisterUI:Notify({Title = "UI Hidden", Content = "Press INSERT to open the menu again.", Duration = 4})
         end
     end
 
     CloseBtn.MouseButton1Click:Connect(function()
         if WindowOpen then
             ToggleUI(false)
-            MeisterUI:Notify({Title = "UI Hidden", Content = "Press INSERT to open the menu again.", Duration = 5})
         end
     end)
 
