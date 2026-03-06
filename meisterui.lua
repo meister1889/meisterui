@@ -228,7 +228,6 @@ function MeisterUI:CreateWindow(options)
     MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
     MainFrame.Size = UDim2.new(0, 650, 0, 400)
     MainFrame.ClipsDescendants = false
-    MainFrame.GroupTransparency = 1 -- Hide initially
     MainFrame.Visible = false
 
     local MainCorner = Instance.new("UICorner")
@@ -347,10 +346,9 @@ function MeisterUI:CreateWindow(options)
         -- 4. Setup Main Hub to start small and then grow as background fades
         MainFrame.Visible = true
         MainFrame.Size = UDim2.new(0, 550, 0, 300)
-        MainFrame.GroupTransparency = 1
         
         local fadeBg = Utility:Tween(IntroOverlay, {0.8}, {BackgroundTransparency = 1})
-        Utility:Tween(MainFrame, {0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400), GroupTransparency = 0})
+        Utility:Tween(MainFrame, {0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400)})
         
         fadeBg.Completed:Connect(function()
             IntroOverlay:Destroy()
@@ -366,9 +364,9 @@ function MeisterUI:CreateWindow(options)
             WindowOpen = not WindowOpen
             if WindowOpen then
                 MainFrame.Visible = true
-                Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400), GroupTransparency = 0})
+                Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400)})
             else
-                local closeTween = Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In}, {Size = UDim2.new(0, 600, 0, 350), GroupTransparency = 1})
+                local closeTween = Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In}, {Size = UDim2.new(0, 600, 0, 350)})
                 closeTween.Completed:Connect(function()
                     if not WindowOpen then MainFrame.Visible = false end
                 end)
@@ -449,7 +447,6 @@ function MeisterUI:CreateWindow(options)
                 if page.Visible then
                     page.Visible = false
                     page.Position = UDim2.new(0, 10, 0, 0)
-                    page.GroupTransparency = 1
                 end
             end
 
@@ -457,7 +454,7 @@ function MeisterUI:CreateWindow(options)
             Utility:Tween(SelectedIndicator, {0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 3, 0, 18)})
             
             TabPage.Visible = true
-            Utility:Tween(TabPage, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Position = UDim2.new(0, 0, 0, 0), GroupTransparency = 0})
+            Utility:Tween(TabPage, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Position = UDim2.new(0, 0, 0, 0)})
         end
 
         TabBtn.MouseButton1Click:Connect(ActivateTab)
