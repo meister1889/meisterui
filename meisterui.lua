@@ -1054,6 +1054,224 @@ function MeisterUI:CreateWindow(options)
             end)
         end
 
+        -- COLOR PICKER
+        function Elements:CreateColorPicker(options)
+            local name = options.Name or "Color Picker"
+            local default = options.Default or Color3.fromRGB(255, 0, 0)
+            local callback = options.Callback or function() end
+
+            local currentH, currentS, currentV = Color3.toHSV(default)
+            local expanded = false
+            local svDragging = false
+            local hueDragging = false
+
+            -- Header row (collapsed by default)
+            local CPFrame = Instance.new("Frame")
+            CPFrame.Parent = TabPage
+            CPFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+            CPFrame.Size = UDim2.new(1, 0, 0, 42)
+            CPFrame.ClipsDescendants = true
+
+            local CPCorner = Instance.new("UICorner")
+            CPCorner.CornerRadius = UDim.new(0, 6)
+            CPCorner.Parent = CPFrame
+
+            local CPStroke = Instance.new("UIStroke")
+            CPStroke.Parent = CPFrame
+            CPStroke.Color = Color3.fromRGB(45, 45, 50)
+            CPStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+            -- Label
+            local CPLabel = Instance.new("TextLabel")
+            CPLabel.Parent = CPFrame
+            CPLabel.BackgroundTransparency = 1
+            CPLabel.Position = UDim2.new(0, 15, 0, 0)
+            CPLabel.Size = UDim2.new(1, -90, 0, 42)
+            CPLabel.Font = Enum.Font.Ubuntu
+            CPLabel.Text = name
+            CPLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+            CPLabel.TextSize = 14
+            CPLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+            -- Color preview swatch
+            local Swatch = Instance.new("Frame")
+            Swatch.Parent = CPFrame
+            Swatch.BackgroundColor3 = default
+            Swatch.Position = UDim2.new(1, -68, 0.5, -10)
+            Swatch.Size = UDim2.new(0, 36, 0, 20)
+            local SwatchCorner = Instance.new("UICorner")
+            SwatchCorner.CornerRadius = UDim.new(0, 4)
+            SwatchCorner.Parent = Swatch
+            local SwatchStroke = Instance.new("UIStroke")
+            SwatchStroke.Parent = Swatch
+            SwatchStroke.Color = Color3.fromRGB(70, 70, 75)
+            SwatchStroke.Thickness = 1
+
+            -- Arrow icon
+            local ArrowIcon = Instance.new("ImageLabel")
+            ArrowIcon.Parent = CPFrame
+            ArrowIcon.BackgroundTransparency = 1
+            ArrowIcon.Position = UDim2.new(1, -26, 0.5, -8)
+            ArrowIcon.Size = UDim2.new(0, 16, 0, 16)
+            ArrowIcon.Image = "rbxassetid://10888331510"
+            ArrowIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
+            ArrowIcon.Rotation = 90
+
+            -- Toggle button
+            local HeaderBtn = Instance.new("TextButton")
+            HeaderBtn.Parent = CPFrame
+            HeaderBtn.BackgroundTransparency = 1
+            HeaderBtn.Size = UDim2.new(1, 0, 0, 42)
+            HeaderBtn.Text = ""
+            HeaderBtn.ZIndex = 2
+
+            -- SV Palette (inside collapsed frame, below header)
+            local Palette = Instance.new("ImageLabel")
+            Palette.Parent = CPFrame
+            Palette.Size = UDim2.new(1, -30, 0, 150)
+            Palette.Position = UDim2.new(0, 15, 0, 52)
+            Palette.BackgroundColor3 = Color3.fromHSV(currentH, 1, 1)
+            Palette.Image = "rbxassetid://4155801252"
+            Palette.ZIndex = 3
+            Instance.new("UICorner", Palette).CornerRadius = UDim.new(0, 4)
+
+            -- SV Cursor
+            local SVCursor = Instance.new("Frame")
+            SVCursor.Parent = Palette
+            SVCursor.Size = UDim2.new(0, 10, 0, 10)
+            SVCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+            SVCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            SVCursor.BorderSizePixel = 0
+            SVCursor.ZIndex = 5
+            SVCursor.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
+            Instance.new("UICorner", SVCursor).CornerRadius = UDim.new(1, 0)
+            local SVStroke = Instance.new("UIStroke", SVCursor)
+            SVStroke.Color = Color3.fromRGB(0, 0, 0)
+            SVStroke.Thickness = 1
+
+            -- Hue Bar
+            local HueBar = Instance.new("ImageLabel")
+            HueBar.Parent = CPFrame
+            HueBar.Size = UDim2.new(1, -30, 0, 14)
+            HueBar.Position = UDim2.new(0, 15, 0, 212)
+            HueBar.Image = "rbxassetid://698052001"
+            HueBar.ZIndex = 3
+            Instance.new("UICorner", HueBar).CornerRadius = UDim.new(0, 4)
+
+            -- Hue Cursor
+            local HueCursor = Instance.new("Frame")
+            HueCursor.Parent = HueBar
+            HueCursor.Size = UDim2.new(0, 5, 1, 4)
+            HueCursor.AnchorPoint = Vector2.new(0.5, 0)
+            HueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            HueCursor.BorderSizePixel = 0
+            HueCursor.ZIndex = 5
+            HueCursor.Position = UDim2.new(currentH, 0, 0, -2)
+            Instance.new("UICorner", HueCursor).CornerRadius = UDim.new(0, 2)
+            local HueStroke = Instance.new("UIStroke", HueCursor)
+            HueStroke.Color = Color3.fromRGB(0, 0, 0)
+            HueStroke.Thickness = 1
+
+            -- Hex label at bottom
+            local HexLabel = Instance.new("TextLabel")
+            HexLabel.Parent = CPFrame
+            HexLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
+            HexLabel.Position = UDim2.new(0, 15, 0, 236)
+            HexLabel.Size = UDim2.new(1, -30, 0, 22)
+            HexLabel.Font = Enum.Font.Code
+            HexLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+            HexLabel.TextSize = 12
+            HexLabel.ZIndex = 3
+            local HexCorner = Instance.new("UICorner")
+            HexCorner.CornerRadius = UDim.new(0, 4)
+            HexCorner.Parent = HexLabel
+
+            local function updateColor()
+                local color = Color3.fromHSV(currentH, currentS, currentV)
+                Swatch.BackgroundColor3 = color
+                Palette.BackgroundColor3 = Color3.fromHSV(currentH, 1, 1)
+                local r = math.floor(color.R * 255)
+                local g = math.floor(color.G * 255)
+                local b = math.floor(color.B * 255)
+                HexLabel.Text = string.format("  #%02X%02X%02X  (R:%d G:%d B:%d)", r, g, b, r, g, b)
+                SVCursor.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
+                HueCursor.Position = UDim2.new(currentH, 0, 0, -2)
+                callback(color)
+            end
+
+            updateColor()
+
+            -- Toggle expand/collapse
+            HeaderBtn.MouseButton1Click:Connect(function()
+                expanded = not expanded
+                if expanded then
+                    Utility:Tween(CPFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 270)})
+                    Utility:Tween(ArrowIcon, {0.3}, {Rotation = -90})
+                else
+                    Utility:Tween(CPFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 42)})
+                    Utility:Tween(ArrowIcon, {0.3}, {Rotation = 90})
+                end
+            end)
+
+            HeaderBtn.MouseEnter:Connect(function()
+                Utility:Tween(CPFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)})
+            end)
+            HeaderBtn.MouseLeave:Connect(function()
+                Utility:Tween(CPFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
+            end)
+
+            -- SV drag
+            Palette.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    svDragging = true
+                    local relX = math.clamp((input.Position.X - Palette.AbsolutePosition.X) / Palette.AbsoluteSize.X, 0, 1)
+                    local relY = math.clamp((input.Position.Y - Palette.AbsolutePosition.Y) / Palette.AbsoluteSize.Y, 0, 1)
+                    currentS = relX
+                    currentV = 1 - relY
+                    updateColor()
+                end
+            end)
+            Palette.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then svDragging = false end
+            end)
+
+            -- Hue drag
+            HueBar.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    hueDragging = true
+                    local relX = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
+                    currentH = relX
+                    updateColor()
+                end
+            end)
+            HueBar.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then hueDragging = false end
+            end)
+
+            -- Global mouse move
+            UserInputService.InputChanged:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement then
+                    if svDragging then
+                        local relX = math.clamp((input.Position.X - Palette.AbsolutePosition.X) / Palette.AbsoluteSize.X, 0, 1)
+                        local relY = math.clamp((input.Position.Y - Palette.AbsolutePosition.Y) / Palette.AbsoluteSize.Y, 0, 1)
+                        currentS = relX
+                        currentV = 1 - relY
+                        updateColor()
+                    elseif hueDragging then
+                        local relX = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
+                        currentH = relX
+                        updateColor()
+                    end
+                end
+            end)
+            UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    svDragging = false
+                    hueDragging = false
+                end
+            end)
+        end
+
         return Elements
     end
 
