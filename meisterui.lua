@@ -194,7 +194,7 @@ end
 
 function MeisterUI:CreateWindow(options)
     local WindowName = options.Name or "MeisterUI"
-    local HideKey = options.HideKey or Enum.KeyCode.RightShift
+    local HideKey = options.HideKey or Enum.KeyCode.Insert
     
     local WindowOpen = false
 
@@ -213,7 +213,7 @@ function MeisterUI:CreateWindow(options)
     IntroTitle.BackgroundTransparency = 1
     IntroTitle.Position = UDim2.new(0.5, -300, 0.5, -50)
     IntroTitle.Size = UDim2.new(0, 600, 0, 100)
-    IntroTitle.Font = Enum.Font.GothamBold
+    IntroTitle.Font = Enum.Font.PermanentMarker
     IntroTitle.Text = "meister"
     IntroTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
     IntroTitle.TextSize = 50
@@ -284,6 +284,24 @@ function MeisterUI:CreateWindow(options)
     Topbar.BackgroundTransparency = 1
     Topbar.Size = UDim2.new(1, 0, 0, 40)
     Utility:MakeDraggable(Topbar, MainFrame)
+    
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Parent = Topbar
+    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.Position = UDim2.new(1, -40, 0, 0)
+    CloseBtn.Size = UDim2.new(0, 40, 1, 0)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.Text = "X"
+    CloseBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+    CloseBtn.TextSize = 14
+    CloseBtn.AutoButtonColor = false
+
+    CloseBtn.MouseEnter:Connect(function()
+        Utility:Tween(CloseBtn, {0.2}, {TextColor3 = Color3.fromRGB(255, 100, 100)})
+    end)
+    CloseBtn.MouseLeave:Connect(function()
+        Utility:Tween(CloseBtn, {0.2}, {TextColor3 = Color3.fromRGB(150, 150, 150)})
+    end)
 
     local MainTitle = Instance.new("TextLabel")
     MainTitle.Parent = Sidebar
@@ -365,21 +383,32 @@ function MeisterUI:CreateWindow(options)
             MeisterUI:Notify({Title = "Loaded", Content = "meister module loaded successfully.", Duration = 4})
         end)
     end)
+    
+    local function ToggleUI(state)
+        WindowOpen = state
+        if WindowOpen then
+            MainFrame.Visible = true
+            Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400), Position = UDim2.new(0.5, -325, 0.5, -200)})
+        else
+            local closeTween = Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In}, {Size = UDim2.new(0, 600, 0, 350), Position = UDim2.new(0.5, -300, 0.5, -175)})
+            closeTween.Completed:Connect(function()
+                if not WindowOpen then MainFrame.Visible = false end
+            end)
+        end
+    end
+
+    CloseBtn.MouseButton1Click:Connect(function()
+        if WindowOpen then
+            ToggleUI(false)
+            MeisterUI:Notify({Title = "UI Hidden", Content = "Press INSERT to open the menu again.", Duration = 5})
+        end
+    end)
 
     -- Toggle Logic
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
         if input.KeyCode == HideKey and not ParentGui:FindFirstChild("IntroOverlay") then
-            WindowOpen = not WindowOpen
-            if WindowOpen then
-                MainFrame.Visible = true
-                Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400), Position = UDim2.new(0.5, -325, 0.5, -200)})
-            else
-                local closeTween = Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In}, {Size = UDim2.new(0, 600, 0, 350), Position = UDim2.new(0.5, -300, 0.5, -175)})
-                closeTween.Completed:Connect(function()
-                    if not WindowOpen then MainFrame.Visible = false end
-                end)
-            end
+            ToggleUI(not WindowOpen)
         end
     end)
 
@@ -509,6 +538,7 @@ function MeisterUI:CreateWindow(options)
             BtnText.TextColor3 = Color3.fromRGB(220, 220, 220)
             BtnText.TextSize = 14
             BtnText.TextXAlignment = Enum.TextXAlignment.Left
+            BtnText.TextTruncate = Enum.TextTruncate.AtEnd
 
             local BtnIcon = Instance.new("ImageLabel")
             BtnIcon.Parent = ButtonFrame
@@ -576,6 +606,7 @@ function MeisterUI:CreateWindow(options)
             TglText.TextColor3 = Color3.fromRGB(220, 220, 220)
             TglText.TextSize = 14
             TglText.TextXAlignment = Enum.TextXAlignment.Left
+            TglText.TextTruncate = Enum.TextTruncate.AtEnd
 
             local SliderBG = Instance.new("Frame")
             SliderBG.Parent = ToggleFrame
