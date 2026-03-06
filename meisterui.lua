@@ -208,14 +208,16 @@ function MeisterUI:CreateWindow(options)
     IntroOverlay.ZIndex = 100
     IntroOverlay.BackgroundTransparency = 1 -- Start transparent and fade to solid black
 
-    local IntroTitle = Instance.new("ImageLabel")
+    local IntroTitle = Instance.new("TextLabel")
     IntroTitle.Parent = IntroOverlay
     IntroTitle.BackgroundTransparency = 1
     IntroTitle.Position = UDim2.new(0.5, -300, 0.5, -50)
     IntroTitle.Size = UDim2.new(0, 600, 0, 100)
-    IntroTitle.Image = "rbxassetid://129783995741936"
-    IntroTitle.ScaleType = Enum.ScaleType.Fit
-    IntroTitle.ImageTransparency = 1
+    IntroTitle.Font = Enum.Font.GothamBlack
+    IntroTitle.Text = "MEISTER"
+    IntroTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
+    IntroTitle.TextSize = 50
+    IntroTitle.TextTransparency = 1
 
 
     -- Main UI Elements
@@ -443,40 +445,20 @@ function MeisterUI:CreateWindow(options)
     ContentArea.Size = UDim2.new(1, -181, 1, -35)
 
     task.spawn(function()
-        -- 0. Fetch true Image ID if user provided a Decal ID
-        local customImage = "rbxassetid://129783995741936"
-        pcall(function()
-            local get_obj = getobjects or game.GetObjects
-            if get_obj then
-                local asset = get_obj(game, customImage)[1]
-                if asset and asset:IsA("Decal") and asset.Texture then
-                    customImage = asset.Texture
-                end
-            end
-        end)
-        IntroTitle.Image = customImage
-
         -- 1. Full black screen fade in
         Utility:Tween(IntroOverlay, {0.5}, {BackgroundTransparency = 0})
         task.wait(0.6)
         
-        -- 2. Fade in logo slowly 
-        Utility:Tween(IntroTitle, {1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {ImageTransparency = 0})
+        -- 2. Fade in text smoothly
+        Utility:Tween(IntroTitle, {1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {TextTransparency = 0})
         
-        -- Simulate a slight pulsing animation by tweening the size and shifting position so it scales from the center
-        local glowTween = Utility:Tween(IntroTitle, {1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut}, {
-            Size = UDim2.new(0, 660, 0, 110), 
-            Position = UDim2.new(0.5, -330, 0.5, -55)
-        })
+        -- Pulse text size animation
+        local glowTween = Utility:Tween(IntroTitle, {1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut}, {TextSize = 56})
         
         task.wait(1.5)
         
-        -- 3. Fade out logo
-        Utility:Tween(IntroTitle, {0.6}, {
-            ImageTransparency = 1, 
-            Size = UDim2.new(0, 700, 0, 116), 
-            Position = UDim2.new(0.5, -350, 0.5, -58)
-        })
+        -- 3. Fade out text
+        Utility:Tween(IntroTitle, {0.6}, {TextTransparency = 1, TextSize = 65})
         task.wait(0.7)
         
         -- 4. Setup Main Hub to start small and then grow as background fades
