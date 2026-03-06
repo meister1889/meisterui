@@ -773,21 +773,45 @@ function MeisterUI:CreateWindow(options)
 
         -- SLIDER
         function Elements:CreateSlider(options)
-            local name = options.Name or "Slider"
-            local min = options.Range[1] or 0
-            local max = options.Range[2] or 100
-            local default = options.CurrentValue or min
+            local name     = options.Name or "Slider"
+            local min      = options.Range[1] or 0
+            local max      = options.Range[2] or 100
+            local default  = options.CurrentValue or min
+            local increment= options.Increment or 1
             local callback = options.Callback or function() end
+            -- Detect float mode: increment < 1 or either bound is float
+            local isFloat  = (increment < 1) or (math.floor(min) ~= min) or (math.floor(max) ~= max)
+            local decimals = 0
+            if isFloat then
+                local s = tostring(increment)
+                local dot = s:find("%.") 
+                decimals = dot and (#s - dot) or 2
+            end
+
+            local function snap(v)
+                if increment <= 0 then return v end
+                local snapped = math.floor((v - min) / increment + 0.5) * increment + min
+                snapped = math.clamp(snapped, min, max)
+                if isFloat then
+                    return tonumber(string.format("%%.%df" % decimals, snapped))
+                end
+                return math.floor(snapped + 0.5)
+            end
+
+            local function fmt(v)
+                if isFloat then return string.format("%%.%df" % decimals, v) end
+                return tostring(math.floor(v + 0.5))
+            end
 
             local SliderFrame = Instance.new("Frame")
             SliderFrame.Parent = TabPage
             SliderFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             SliderFrame.Size = UDim2.new(1, 0, 0, 60)
-            
+
             local SCorner = Instance.new("UICorner")
             SCorner.CornerRadius = UDim.new(0, 6)
             SCorner.Parent = SliderFrame
-            
+
             local SStroke = Instance.new("UIStroke")
             SStroke.Parent = SliderFrame
             SStroke.Color = Color3.fromRGB(45, 45, 50)
@@ -811,7 +835,7 @@ function MeisterUI:CreateWindow(options)
             ValueLab.Position = UDim2.new(0, 15, 0, 10)
             ValueLab.Size = UDim2.new(1, -30, 0, 20)
             ValueLab.Font = Enum.Font.Ubuntu
-            ValueLab.Text = tostring(default)
+            ValueLab.Text = fmt(default)
             ValueLab.TextColor3 = Color3.fromRGB(150, 150, 150)
             ValueLab.TextSize = 14
             ValueLab.TextXAlignment = Enum.TextXAlignment.Right
@@ -833,25 +857,43 @@ function MeisterUI:CreateWindow(options)
             FCorner.CornerRadius = UDim.new(1, 0)
             FCorner.Parent = TrackFill
 
+            -- Drag handle circle
+            local Handle = Instance.new("Frame")
+            Handle.Parent = TrackBG
+            Handle.Size = UDim2.new(0, 12, 0, 12)
+            Handle.AnchorPoint = Vector2.new(0.5, 0.5)
+            Handle.Position = UDim2.new((default - min) / math.max(max - min, 0.0001), 0, 0.5, 0)
+            Handle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Handle.BorderSizePixel = 0
+            Handle.ZIndex = 3
+            Instance.new("UICorner", Handle).CornerRadius = UDim.new(1, 0)
+            local HandleShadow = Instance.new("UIStroke", Handle)
+            HandleShadow.Color = Color3.fromRGB(0, 0, 0)
+            HandleShadow.Thickness = 1
+            HandleShadow.Transparency = 0.6
+
             local DragBtn = Instance.new("TextButton")
             DragBtn.Parent = TrackBG
             DragBtn.BackgroundTransparency = 1
             DragBtn.Position = UDim2.new(0, -15, 0, -10)
             DragBtn.Size = UDim2.new(1, 30, 1, 20)
             DragBtn.Text = ""
+            DragBtn.ZIndex = 5
 
-            local hovering = false
-            SliderFrame.MouseEnter:Connect(function() hovering = true Utility:Tween(SliderFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}) end)
-            SliderFrame.MouseLeave:Connect(function() hovering = false Utility:Tween(SliderFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}) end)
+            SliderFrame.MouseEnter:Connect(function() Utility:Tween(SliderFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}) end)
+            SliderFrame.MouseLeave:Connect(function() Utility:Tween(SliderFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}) end)
 
             local dragging = false
             local function updateSlider(input)
                 local trackWidth = TrackBG.AbsoluteSize.X
                 if trackWidth == 0 then trackWidth = 1 end
                 local sizeX = math.clamp((input.Position.X - TrackBG.AbsolutePosition.X) / trackWidth, 0, 1)
-                Utility:Tween(TrackFill, {0.1}, {Size = UDim2.new(sizeX, 0, 1, 0)})
-                local value = math.floor(min + ((max - min) * sizeX))
-                ValueLab.Text = tostring(value)
+                local raw   = min + (max - min) * sizeX
+                local value = snap(raw)
+                local fillX = (value - min) / math.max(max - min, 0.0001)
+                Utility:Tween(TrackFill, {0.05}, {Size = UDim2.new(fillX, 0, 1, 0)})
+                Handle.Position = UDim2.new(fillX, 0, 0.5, 0)
+                ValueLab.Text = fmt(value)
                 callback(value)
             end
 
@@ -861,21 +903,161 @@ function MeisterUI:CreateWindow(options)
                     updateSlider(input)
                 end
             end)
-
             DragBtn.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     dragging = false
                 end
             end)
-
             UserInputService.InputChanged:Connect(function(input)
                 if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     updateSlider(input)
                 end
             end)
+            UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+            end)
 
-            -- Set default
-            TrackFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+            -- Set initial fill
+            local initFill = (default - min) / math.max(max - min, 0.0001)
+            TrackFill.Size = UDim2.new(math.clamp(initFill, 0, 1), 0, 1, 0)
+            Handle.Position = UDim2.new(math.clamp(initFill, 0, 1), 0, 0.5, 0)
+        end
+
+        -- LABEL (informational text row)
+        function Elements:CreateLabel(options)
+            local text    = options.Text or "Label"
+            local color   = options.Color or Color3.fromRGB(180, 180, 180)
+            local size    = options.TextSize or 13
+
+            local LFrame = Instance.new("Frame")
+            LFrame.Parent = TabPage
+            LFrame.BackgroundTransparency = 1
+            LFrame.Size = UDim2.new(1, 0, 0, 28)
+
+            local LText = Instance.new("TextLabel")
+            LText.Parent = LFrame
+            LText.BackgroundTransparency = 1
+            LText.Position = UDim2.new(0, 15, 0, 0)
+            LText.Size = UDim2.new(1, -30, 1, 0)
+            LText.Font = Enum.Font.Ubuntu
+            LText.Text = text
+            LText.TextColor3 = color
+            LText.TextSize = size
+            LText.TextXAlignment = Enum.TextXAlignment.Left
+            LText.TextWrapped = true
+            LText.RichText = true
+
+            local function SetText(newText) LText.Text = newText end
+            local function SetColor(newCol) LText.TextColor3 = newCol end
+            return {SetText = SetText, SetColor = SetColor}
+        end
+
+        -- SEPARATOR (horizontal divider line with optional label)
+        function Elements:CreateSeparator(options)
+            local text = options and options.Text or ""
+
+            local SepFrame = Instance.new("Frame")
+            SepFrame.Parent = TabPage
+            SepFrame.BackgroundTransparency = 1
+            SepFrame.Size = UDim2.new(1, 0, 0, 24)
+
+            local Line = Instance.new("Frame")
+            Line.Parent = SepFrame
+            Line.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+            Line.BorderSizePixel = 0
+            Line.AnchorPoint = Vector2.new(0, 0.5)
+            Line.Position = UDim2.new(0, 15, 0.5, 0)
+            Line.Size = UDim2.new(1, -30, 0, 1)
+            Instance.new("UICorner", Line).CornerRadius = UDim.new(1, 0)
+
+            if text ~= "" then
+                local SepLab = Instance.new("TextLabel")
+                SepLab.Parent = SepFrame
+                SepLab.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
+                SepLab.Size = UDim2.new(0, 0, 0, 16)
+                SepLab.AutomaticSize = Enum.AutomaticSize.X
+                SepLab.AnchorPoint = Vector2.new(0.5, 0.5)
+                SepLab.Position = UDim2.new(0.5, 0, 0.5, 0)
+                SepLab.Font = Enum.Font.Ubuntu
+                SepLab.Text = "  " .. text .. "  "
+                SepLab.TextColor3 = Color3.fromRGB(120, 120, 125)
+                SepLab.TextSize = 11
+                SepLab.ZIndex = 2
+            end
+        end
+
+        -- KEYBIND
+        function Elements:CreateKeybind(options)
+            local name     = options.Name or "Keybind"
+            local default  = options.CurrentKey or Enum.KeyCode.Unknown
+            local callback = options.Callback or function() end
+
+            local listening = false
+            local currentKey = default
+
+            local KFrame = Instance.new("Frame")
+            KFrame.Parent = TabPage
+            KFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+            KFrame.Size = UDim2.new(1, 0, 0, 42)
+
+            local KCorner = Instance.new("UICorner")
+            KCorner.CornerRadius = UDim.new(0, 6)
+            KCorner.Parent = KFrame
+
+            local KStroke = Instance.new("UIStroke")
+            KStroke.Parent = KFrame
+            KStroke.Color = Color3.fromRGB(45, 45, 50)
+            KStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+            local KLabel = Instance.new("TextLabel")
+            KLabel.Parent = KFrame
+            KLabel.BackgroundTransparency = 1
+            KLabel.Position = UDim2.new(0, 15, 0, 0)
+            KLabel.Size = UDim2.new(1, -100, 1, 0)
+            KLabel.Font = Enum.Font.Ubuntu
+            KLabel.Text = name
+            KLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+            KLabel.TextSize = 14
+            KLabel.TextXAlignment = Enum.TextXAlignment.Left
+            KLabel.TextTruncate = Enum.TextTruncate.AtEnd
+
+            local KeyBtn = Instance.new("TextButton")
+            KeyBtn.Parent = KFrame
+            KeyBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
+            KeyBtn.Position = UDim2.new(1, -90, 0.5, -12)
+            KeyBtn.Size = UDim2.new(0, 78, 0, 24)
+            KeyBtn.Font = Enum.Font.Code
+            KeyBtn.Text = currentKey.Name
+            KeyBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+            KeyBtn.TextSize = 12
+            KeyBtn.AutoButtonColor = false
+            Instance.new("UICorner", KeyBtn).CornerRadius = UDim.new(0, 4)
+            local KBStroke = Instance.new("UIStroke", KeyBtn)
+            KBStroke.Color = Color3.fromRGB(55, 55, 60)
+
+            KFrame.MouseEnter:Connect(function() Utility:Tween(KFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}) end)
+            KFrame.MouseLeave:Connect(function() Utility:Tween(KFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}) end)
+
+            KeyBtn.MouseButton1Click:Connect(function()
+                listening = true
+                KeyBtn.Text = "..."
+                Utility:Tween(KBStroke, {0.2}, {Color = Color3.fromRGB(220, 220, 220)})
+            end)
+
+            UserInputService.InputBegan:Connect(function(input, gp)
+                if not listening then return end
+                if input.UserInputType == Enum.UserInputType.Keyboard then
+                    if input.KeyCode == Enum.KeyCode.Escape then
+                        currentKey = Enum.KeyCode.Unknown
+                    else
+                        currentKey = input.KeyCode
+                    end
+                    listening = false
+                    KeyBtn.Text = currentKey.Name
+                    Utility:Tween(KBStroke, {0.2}, {Color = Color3.fromRGB(55, 55, 60)})
+                    callback(currentKey)
+                end
+            end)
         end
 
         -- DROPDOWN
