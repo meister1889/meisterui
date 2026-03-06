@@ -1462,15 +1462,15 @@ end
 
 -- ============================================================
 --  MeisterUI:KeySystem({ Key, GetKeyURL, Title, Subtitle })
+--  Themed to match MeisterUI's dark monochrome aesthetic.
 --  Call BEFORE CreateWindow. Blocks until correct key entered.
 -- ============================================================
 function MeisterUI:KeySystem(config)
-    local validKey  = config.Key       or ""
-    local linkURL   = config.GetKeyURL or ""
-    local title     = config.Title     or "KEY SYSTEM"
-    local subtitle  = config.Subtitle  or "Enter your key to continue"
+    local validKey = config.Key       or ""
+    local linkURL  = config.GetKeyURL or ""
+    local title    = config.Title     or "MEISTER"
+    local subtitle = config.Subtitle  or "Enter your key to continue"
 
-    -- Use an OVERLAY on top of the existing ScreenGui
     local KGui = Instance.new("ScreenGui")
     KGui.Name           = "MeisterUI_KeySystem"
     KGui.DisplayOrder   = 9999
@@ -1479,147 +1479,231 @@ function MeisterUI:KeySystem(config)
     KGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     KGui.Parent         = ParentGui
 
-    -- Dark overlay
+    -- Dark overlay — same as IntroOverlay
     local Overlay = Instance.new("Frame", KGui)
     Overlay.Size                  = UDim2.fromScale(1,1)
-    Overlay.BackgroundColor3      = Color3.new(0,0,0)
-    Overlay.BackgroundTransparency= 0.45
+    Overlay.BackgroundColor3      = Color3.fromRGB(0,0,0)
+    Overlay.BackgroundTransparency= 1   -- fade in
     Overlay.BorderSizePixel       = 0
     Overlay.ZIndex                = 100
 
-    -- Card
+    -- Card — matches MainFrame colour RGB(15,15,18)
     local Card = Instance.new("Frame", KGui)
     Card.AnchorPoint      = Vector2.new(0.5,0.5)
-    Card.Position         = UDim2.fromScale(0.5,0.5)
-    Card.Size             = UDim2.fromOffset(440,280)
-    Card.BackgroundColor3 = Color3.fromRGB(18,18,26)
+    Card.Position         = UDim2.fromScale(0.5, 0.52)   -- starts a bit low
+    Card.Size             = UDim2.fromOffset(360, 200)    -- starts small
+    Card.BackgroundColor3 = Color3.fromRGB(15,15,18)
     Card.BorderSizePixel  = 0
     Card.ZIndex           = 101
-    Instance.new("UICorner",Card).CornerRadius = UDim.new(0,14)
+    Instance.new("UICorner",Card).CornerRadius = UDim.new(0,10)
 
-    -- Drop shadow (fake)
-    local Shadow = Instance.new("Frame", KGui)
-    Shadow.AnchorPoint      = Vector2.new(0.5,0.5)
-    Shadow.Position         = UDim2.new(0.5,4,0.5,6)
-    Shadow.Size             = UDim2.fromOffset(440,280)
-    Shadow.BackgroundColor3 = Color3.new(0,0,0)
-    Shadow.BackgroundTransparency = 0.6
-    Shadow.BorderSizePixel  = 0
-    Shadow.ZIndex           = 100
+    -- Card stroke — matches MainStroke RGB(50,50,55)
+    local CardStroke = Instance.new("UIStroke",Card)
+    CardStroke.Color           = Color3.fromRGB(50,50,55)
+    CardStroke.Thickness       = 1
+    CardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+    -- Drop shadow — child of card, behind it (ZIndex -1)
+    local Shadow = Instance.new("Frame",Card)
+    Shadow.BackgroundColor3       = Color3.fromRGB(0,0,0)
+    Shadow.Size                   = UDim2.new(1,10,1,10)
+    Shadow.Position               = UDim2.new(0,-5,0,-5)
+    Shadow.BackgroundTransparency = 0.8
+    Shadow.ZIndex                 = -1
+    Shadow.BorderSizePixel        = 0
     Instance.new("UICorner",Shadow).CornerRadius = UDim.new(0,14)
 
-    -- Red accent bar
-    local Bar = Instance.new("Frame",Card)
-    Bar.Size             = UDim2.new(1,0,0,4)
-    Bar.BackgroundColor3 = Color3.fromRGB(210,35,35)
-    Bar.BorderSizePixel  = 0
-    Bar.ZIndex           = 102
-    Instance.new("UICorner",Bar).CornerRadius = UDim.new(1,0)
+    -- Header bar — matches Topbar colour RGB(22,22,26)
+    local Header = Instance.new("Frame",Card)
+    Header.Size             = UDim2.new(1,0,0,35)
+    Header.BackgroundColor3 = Color3.fromRGB(22,22,26)
+    Header.BorderSizePixel  = 0
+    Header.ZIndex           = 102
+    Instance.new("UICorner",Header).CornerRadius = UDim.new(0,10)
 
-    -- Helper label maker
-    local function L(parent,props)
-        local t=Instance.new("TextLabel",parent)
-        t.BackgroundTransparency=1
-        t.ZIndex=102
-        for k,v in pairs(props) do t[k]=v end
-        return t
-    end
+    -- Fix bottom corners of header (same as TopbarFix)
+    local HFix = Instance.new("Frame",Header)
+    HFix.BackgroundColor3 = Color3.fromRGB(22,22,26)
+    HFix.Position         = UDim2.new(0,0,1,-10)
+    HFix.Size             = UDim2.new(1,0,0,10)
+    HFix.BorderSizePixel  = 0
 
-    L(Card,{Size=UDim2.new(1,0,0,38),Position=UDim2.fromOffset(0,18),
-        Text=title,TextColor3=Color3.new(1,1,1),Font=Enum.Font.GothamBold,TextSize=24})
-    L(Card,{Size=UDim2.new(1,0,0,22),Position=UDim2.fromOffset(0,60),
-        Text=subtitle,TextColor3=Color3.fromRGB(130,130,160),Font=Enum.Font.Gotham,TextSize=13})
+    -- Header divider — matches TopbarDivider RGB(40,40,45)
+    local HDiv = Instance.new("Frame",Header)
+    HDiv.BackgroundColor3 = Color3.fromRGB(40,40,45)
+    HDiv.Position         = UDim2.new(0,0,1,-1)
+    HDiv.Size             = UDim2.new(1,0,0,1)
+    HDiv.BorderSizePixel  = 0
 
-    -- Input background
-    local IBg=Instance.new("Frame",Card)
-    IBg.Size             =UDim2.new(1,-48,0,42)
-    IBg.Position         =UDim2.fromOffset(24,96)
-    IBg.BackgroundColor3 =Color3.fromRGB(12,12,20)
-    IBg.BorderSizePixel  =0;IBg.ZIndex=102
-    Instance.new("UICorner",IBg).CornerRadius=UDim.new(0,8)
+    -- Title — matches MainTitle (Font.Ubuntu, 14px, white, left-aligned)
+    local TitleLb = Instance.new("TextLabel",Header)
+    TitleLb.BackgroundTransparency = 1
+    TitleLb.Position       = UDim2.new(0,15,0,0)
+    TitleLb.Size           = UDim2.new(1,-20,1,0)
+    TitleLb.Font           = Enum.Font.Ubuntu
+    TitleLb.Text           = title
+    TitleLb.TextColor3     = Color3.fromRGB(255,255,255)
+    TitleLb.TextSize       = 14
+    TitleLb.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLb.ZIndex         = 103
 
-    -- Input stroke
-    local Stroke=Instance.new("UIStroke",IBg)
-    Stroke.Color=Color3.fromRGB(50,50,70);Stroke.Thickness=1
+    -- Subtitle — matches secondary label colour RGB(150,150,150)
+    local SubLb = Instance.new("TextLabel",Card)
+    SubLb.BackgroundTransparency = 1
+    SubLb.Position       = UDim2.new(0,18,0,46)
+    SubLb.Size           = UDim2.new(1,-36,0,18)
+    SubLb.Font           = Enum.Font.Ubuntu
+    SubLb.Text           = subtitle
+    SubLb.TextColor3     = Color3.fromRGB(150,150,150)
+    SubLb.TextSize       = 13
+    SubLb.TextXAlignment = Enum.TextXAlignment.Left
+    SubLb.ZIndex         = 102
 
-    local IBox=Instance.new("TextBox",IBg)
-    IBox.Size               =UDim2.new(1,-12,1,0)
-    IBox.Position           =UDim2.fromOffset(6,0)
-    IBox.BackgroundTransparency=1
-    IBox.Text               =""
-    IBox.PlaceholderText    ="Paste your key here..."
-    IBox.PlaceholderColor3  =Color3.fromRGB(65,65,90)
-    IBox.TextColor3         =Color3.fromRGB(220,220,255)
-    IBox.Font               =Enum.Font.Code;IBox.TextSize=13
-    IBox.ClearTextOnFocus   =false;IBox.ZIndex=103
+    -- Input background — matches notification frame RGB(25,25,25)
+    local IBg = Instance.new("Frame",Card)
+    IBg.Size             = UDim2.new(1,-36,0,36)
+    IBg.Position         = UDim2.new(0,18,0,74)
+    IBg.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    IBg.BorderSizePixel  = 0
+    IBg.ZIndex           = 102
+    Instance.new("UICorner",IBg).CornerRadius = UDim.new(0,8)
 
-    -- Status label
-    local Status=L(Card,{Size=UDim2.new(1,0,0,18),Position=UDim2.fromOffset(0,146),
-        Text="",TextColor3=Color3.fromRGB(210,50,50),Font=Enum.Font.Gotham,TextSize=12})
+    local IStroke = Instance.new("UIStroke",IBg)
+    IStroke.Color           = Color3.fromRGB(50,50,55)
+    IStroke.Thickness       = 1
+    IStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-    -- Button factory
-    local function Btn(text,xOff,bgCol,txtCol)
-        local b=Instance.new("TextButton",Card)
-        b.Size=UDim2.new(0.44,0,0,42);b.Position=UDim2.fromOffset(xOff,176)
-        b.BackgroundColor3=bgCol;b.BorderSizePixel=0
-        b.Text=text;b.TextColor3=txtCol
-        b.Font=Enum.Font.GothamSemibold;b.TextSize=14;b.ZIndex=102
-        Instance.new("UICorner",b).CornerRadius=UDim.new(0,8)
-        -- Hover
-        b.MouseEnter:Connect(function()
-            TweenService:Create(b,TweenInfo.new(0.15),{BackgroundColor3=bgCol:Lerp(Color3.new(1,1,1),0.08)}):Play()
-        end)
-        b.MouseLeave:Connect(function()
-            TweenService:Create(b,TweenInfo.new(0.15),{BackgroundColor3=bgCol}):Play()
-        end)
-        return b
-    end
+    local IBox = Instance.new("TextBox",IBg)
+    IBox.Size                  = UDim2.new(1,-14,1,0)
+    IBox.Position              = UDim2.new(0,7,0,0)
+    IBox.BackgroundTransparency= 1
+    IBox.Text                  = ""
+    IBox.PlaceholderText       = "Paste your key here..."
+    IBox.PlaceholderColor3     = Color3.fromRGB(70,70,75)
+    IBox.TextColor3            = Color3.fromRGB(240,240,240)
+    IBox.Font                  = Enum.Font.Code
+    IBox.TextSize              = 13
+    IBox.ClearTextOnFocus      = false
+    IBox.ZIndex                = 103
 
-    local BtnGet    = Btn("Get Key",    24,  Color3.fromRGB(28,28,44), Color3.fromRGB(210,40,40))
-    local BtnSubmit = Btn("Submit",     240, Color3.fromRGB(210,35,35), Color3.new(1,1,1))
+    -- Status text — secondary colour, left align
+    local StatusLb = Instance.new("TextLabel",Card)
+    StatusLb.BackgroundTransparency = 1
+    StatusLb.Position       = UDim2.new(0,18,0,118)
+    StatusLb.Size           = UDim2.new(1,-36,0,16)
+    StatusLb.Font           = Enum.Font.Ubuntu
+    StatusLb.Text           = ""
+    StatusLb.TextColor3     = Color3.fromRGB(150,150,150)
+    StatusLb.TextSize       = 12
+    StatusLb.TextXAlignment = Enum.TextXAlignment.Left
+    StatusLb.ZIndex         = 102
 
-    L(Card,{Size=UDim2.new(1,0,0,18),Position=UDim2.new(0,0,1,-26),
-        Text="MeisterUI  |  meister",TextColor3=Color3.fromRGB(40,40,60),Font=Enum.Font.Gotham,TextSize=11})
+    -- Button factory — matches tab button style exactly
+    local btnY = 143
+    local function MakeBtn(text, xOff, width, isPrimary)
+        local B = Instance.new("TextButton",Card)
+        B.Size             = UDim2.new(0, width, 0, 32)
+        B.Position         = UDim2.new(0, xOff, 0, btnY)
+        B.BackgroundColor3 = Color3.fromRGB(22,22,26)
+        B.BorderSizePixel  = 0
+        B.AutoButtonColor  = false
+        B.Font             = Enum.Font.Ubuntu
+        B.Text             = isPrimary and ("   "..text) or text
+        B.TextColor3       = isPrimary and Color3.fromRGB(220,220,220) or Color3.fromRGB(150,150,150)
+        B.TextSize         = 13
+        B.TextXAlignment   = Enum.TextXAlignment.Left
+        B.ZIndex           = 102
+        Instance.new("UICorner",B).CornerRadius = UDim.new(0,6)
 
-    -- Shake animation
-    local function Shake()
-        local orig=Card.Position
-        for i=1,8 do
-            Card.Position=orig+UDim2.fromOffset(i%2==0 and 8 or -8,0)
-            task.wait(0.035)
+        local BS = Instance.new("UIStroke",B)
+        BS.Color           = Color3.fromRGB(50,50,55)
+        BS.Thickness       = 1
+        BS.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+        -- Accent indicator — same as SelectedIndicator in tabs (white bar on left)
+        if isPrimary then
+            local Ind = Instance.new("Frame",B)
+            Ind.BackgroundColor3 = Color3.fromRGB(220,220,220)
+            Ind.Size             = UDim2.new(0,3,0,14)
+            Ind.Position         = UDim2.new(0,0,0.5,-7)
+            Ind.BorderSizePixel  = 0
+            Instance.new("UICorner",Ind).CornerRadius = UDim.new(1,0)
         end
-        Card.Position=orig
+
+        B.MouseEnter:Connect(function()
+            Utility:Tween(B,{0.2},{BackgroundColor3=Color3.fromRGB(30,30,36)})
+            Utility:Tween(BS,{0.2},{Color=Color3.fromRGB(80,80,85)})
+        end)
+        B.MouseLeave:Connect(function()
+            Utility:Tween(B,{0.2},{BackgroundColor3=Color3.fromRGB(22,22,26)})
+            Utility:Tween(BS,{0.2},{Color=Color3.fromRGB(50,50,55)})
+        end)
+        return B
     end
 
-    -- Pulse stroke on focus
+    local btnW   = (420-36-8) / 2   -- two buttons with 8px gap
+    local BtnGet    = MakeBtn("Get Key", 18,          btnW, false)
+    local BtnSubmit = MakeBtn("Submit",  18+btnW+8,   btnW, true)
+
+    -- Footer — same as GameLab style
+    local FooterLb = Instance.new("TextLabel",Card)
+    FooterLb.BackgroundTransparency = 1
+    FooterLb.Position       = UDim2.new(0,18,1,-22)
+    FooterLb.Size           = UDim2.new(1,-36,0,14)
+    FooterLb.Font           = Enum.Font.Ubuntu
+    FooterLb.Text           = "meister library"
+    FooterLb.TextColor3     = Color3.fromRGB(60,60,65)
+    FooterLb.TextSize       = 11
+    FooterLb.TextXAlignment = Enum.TextXAlignment.Left
+    FooterLb.ZIndex         = 102
+
+    -- Animate in — same Quart/Back style as CreateWindow
+    Utility:Tween(Overlay,{0.4},{BackgroundTransparency=0.35})
+    Utility:Tween(Card,{0.45,Enum.EasingStyle.Back,Enum.EasingDirection.Out},{
+        Size     = UDim2.fromOffset(420,195),
+        Position = UDim2.fromScale(0.5,0.5),
+    })
+
+    -- Input focus — stroke brightens (same style as rest of lib)
     IBox.Focused:Connect(function()
-        TweenService:Create(Stroke,TweenInfo.new(0.2),{Color=Color3.fromRGB(210,35,35),Thickness=1.5}):Play()
+        Utility:Tween(IStroke,{0.2},{Color=Color3.fromRGB(120,120,130),Thickness=1.5})
     end)
     IBox.FocusLost:Connect(function()
-        TweenService:Create(Stroke,TweenInfo.new(0.2),{Color=Color3.fromRGB(50,50,70),Thickness=1}):Play()
+        Utility:Tween(IStroke,{0.2},{Color=Color3.fromRGB(50,50,55),Thickness=1})
     end)
 
-    -- Get Key
+    -- Shake (matching MakeDraggable delta style)
+    local function Shake()
+        local orig = Card.Position
+        for i = 1,7 do
+            Card.Position = orig + UDim2.fromOffset(i%2==0 and 7 or -7, 0)
+            task.wait(0.035)
+        end
+        Card.Position = orig
+    end
+
+    -- Get Key — copy link
     BtnGet.MouseButton1Click:Connect(function()
         pcall(function() setclipboard(linkURL) end)
-        Status.TextColor3=Color3.fromRGB(60,210,100)
-        Status.Text="Link copied to clipboard!"
+        StatusLb.TextColor3 = Color3.fromRGB(130,190,130)
+        StatusLb.Text = "Link copied to clipboard."
     end)
 
     -- Validate key
-    local _done=false
+    local _done = false
     local function TryKey()
-        if IBox.Text==validKey then
-            _done=true
-            Status.TextColor3=Color3.fromRGB(60,220,110)
-            Status.Text="Key accepted! Loading..."
-            TweenService:Create(Card,   TweenInfo.new(0.4,Enum.EasingStyle.Quart),{BackgroundTransparency=1}):Play()
-            TweenService:Create(Shadow, TweenInfo.new(0.4,Enum.EasingStyle.Quart),{BackgroundTransparency=1}):Play()
-            TweenService:Create(Overlay,TweenInfo.new(0.4,Enum.EasingStyle.Quart),{BackgroundTransparency=1}):Play()
-            task.delay(0.5,function() KGui:Destroy() end)
+        if IBox.Text == validKey then
+            _done = true
+            StatusLb.TextColor3 = Color3.fromRGB(130,190,130)
+            StatusLb.Text = "Key accepted. Loading..."
+            -- Close: shrink + fade, same as ToggleUI close
+            Utility:Tween(Card,{0.35,Enum.EasingStyle.Back,Enum.EasingDirection.In},{
+                Size=UDim2.fromOffset(360,160),Position=UDim2.fromScale(0.5,0.52)})
+            Utility:Tween(Overlay,{0.35},{BackgroundTransparency=1})
+            task.delay(0.4, function() KGui:Destroy() end)
         else
-            Status.TextColor3=Color3.fromRGB(220,50,50)
-            Status.Text="Wrong key! Click 'Get Key' to get yours."
+            StatusLb.TextColor3 = Color3.fromRGB(190,120,120)
+            StatusLb.Text = "Invalid key. Click 'Get Key' to receive yours."
             task.spawn(Shake)
         end
     end
@@ -1627,7 +1711,6 @@ function MeisterUI:KeySystem(config)
     BtnSubmit.MouseButton1Click:Connect(TryKey)
     IBox.FocusLost:Connect(function(enter) if enter then TryKey() end end)
 
-    -- Block until correct
     repeat task.wait(0.05) until _done
 end
 
