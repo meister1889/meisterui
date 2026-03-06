@@ -1460,4 +1460,175 @@ function MeisterUI:CreateWindow(options)
     return Window
 end
 
+-- ============================================================
+--  MeisterUI:KeySystem({ Key, GetKeyURL, Title, Subtitle })
+--  Call BEFORE CreateWindow. Blocks until correct key entered.
+-- ============================================================
+function MeisterUI:KeySystem(config)
+    local validKey  = config.Key       or ""
+    local linkURL   = config.GetKeyURL or ""
+    local title     = config.Title     or "KEY SYSTEM"
+    local subtitle  = config.Subtitle  or "Enter your key to continue"
+
+    -- Use an OVERLAY on top of the existing ScreenGui
+    local KGui = Instance.new("ScreenGui")
+    KGui.Name           = "MeisterUI_KeySystem"
+    KGui.DisplayOrder   = 9999
+    KGui.IgnoreGuiInset = true
+    KGui.ResetOnSpawn   = false
+    KGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    KGui.Parent         = ParentGui
+
+    -- Dark overlay
+    local Overlay = Instance.new("Frame", KGui)
+    Overlay.Size                  = UDim2.fromScale(1,1)
+    Overlay.BackgroundColor3      = Color3.new(0,0,0)
+    Overlay.BackgroundTransparency= 0.45
+    Overlay.BorderSizePixel       = 0
+    Overlay.ZIndex                = 100
+
+    -- Card
+    local Card = Instance.new("Frame", KGui)
+    Card.AnchorPoint      = Vector2.new(0.5,0.5)
+    Card.Position         = UDim2.fromScale(0.5,0.5)
+    Card.Size             = UDim2.fromOffset(440,280)
+    Card.BackgroundColor3 = Color3.fromRGB(18,18,26)
+    Card.BorderSizePixel  = 0
+    Card.ZIndex           = 101
+    Instance.new("UICorner",Card).CornerRadius = UDim.new(0,14)
+
+    -- Drop shadow (fake)
+    local Shadow = Instance.new("Frame", KGui)
+    Shadow.AnchorPoint      = Vector2.new(0.5,0.5)
+    Shadow.Position         = UDim2.new(0.5,4,0.5,6)
+    Shadow.Size             = UDim2.fromOffset(440,280)
+    Shadow.BackgroundColor3 = Color3.new(0,0,0)
+    Shadow.BackgroundTransparency = 0.6
+    Shadow.BorderSizePixel  = 0
+    Shadow.ZIndex           = 100
+    Instance.new("UICorner",Shadow).CornerRadius = UDim.new(0,14)
+
+    -- Red accent bar
+    local Bar = Instance.new("Frame",Card)
+    Bar.Size             = UDim2.new(1,0,0,4)
+    Bar.BackgroundColor3 = Color3.fromRGB(210,35,35)
+    Bar.BorderSizePixel  = 0
+    Bar.ZIndex           = 102
+    Instance.new("UICorner",Bar).CornerRadius = UDim.new(1,0)
+
+    -- Helper label maker
+    local function L(parent,props)
+        local t=Instance.new("TextLabel",parent)
+        t.BackgroundTransparency=1
+        t.ZIndex=102
+        for k,v in pairs(props) do t[k]=v end
+        return t
+    end
+
+    L(Card,{Size=UDim2.new(1,0,0,38),Position=UDim2.fromOffset(0,18),
+        Text=title,TextColor3=Color3.new(1,1,1),Font=Enum.Font.GothamBold,TextSize=24})
+    L(Card,{Size=UDim2.new(1,0,0,22),Position=UDim2.fromOffset(0,60),
+        Text=subtitle,TextColor3=Color3.fromRGB(130,130,160),Font=Enum.Font.Gotham,TextSize=13})
+
+    -- Input background
+    local IBg=Instance.new("Frame",Card)
+    IBg.Size             =UDim2.new(1,-48,0,42)
+    IBg.Position         =UDim2.fromOffset(24,96)
+    IBg.BackgroundColor3 =Color3.fromRGB(12,12,20)
+    IBg.BorderSizePixel  =0;IBg.ZIndex=102
+    Instance.new("UICorner",IBg).CornerRadius=UDim.new(0,8)
+
+    -- Input stroke
+    local Stroke=Instance.new("UIStroke",IBg)
+    Stroke.Color=Color3.fromRGB(50,50,70);Stroke.Thickness=1
+
+    local IBox=Instance.new("TextBox",IBg)
+    IBox.Size               =UDim2.new(1,-12,1,0)
+    IBox.Position           =UDim2.fromOffset(6,0)
+    IBox.BackgroundTransparency=1
+    IBox.Text               =""
+    IBox.PlaceholderText    ="Paste your key here..."
+    IBox.PlaceholderColor3  =Color3.fromRGB(65,65,90)
+    IBox.TextColor3         =Color3.fromRGB(220,220,255)
+    IBox.Font               =Enum.Font.Code;IBox.TextSize=13
+    IBox.ClearTextOnFocus   =false;IBox.ZIndex=103
+
+    -- Status label
+    local Status=L(Card,{Size=UDim2.new(1,0,0,18),Position=UDim2.fromOffset(0,146),
+        Text="",TextColor3=Color3.fromRGB(210,50,50),Font=Enum.Font.Gotham,TextSize=12})
+
+    -- Button factory
+    local function Btn(text,xOff,bgCol,txtCol)
+        local b=Instance.new("TextButton",Card)
+        b.Size=UDim2.new(0.44,0,0,42);b.Position=UDim2.fromOffset(xOff,176)
+        b.BackgroundColor3=bgCol;b.BorderSizePixel=0
+        b.Text=text;b.TextColor3=txtCol
+        b.Font=Enum.Font.GothamSemibold;b.TextSize=14;b.ZIndex=102
+        Instance.new("UICorner",b).CornerRadius=UDim.new(0,8)
+        -- Hover
+        b.MouseEnter:Connect(function()
+            TweenService:Create(b,TweenInfo.new(0.15),{BackgroundColor3=bgCol:Lerp(Color3.new(1,1,1),0.08)}):Play()
+        end)
+        b.MouseLeave:Connect(function()
+            TweenService:Create(b,TweenInfo.new(0.15),{BackgroundColor3=bgCol}):Play()
+        end)
+        return b
+    end
+
+    local BtnGet    = Btn("Get Key",    24,  Color3.fromRGB(28,28,44), Color3.fromRGB(210,40,40))
+    local BtnSubmit = Btn("Submit",     240, Color3.fromRGB(210,35,35), Color3.new(1,1,1))
+
+    L(Card,{Size=UDim2.new(1,0,0,18),Position=UDim2.new(0,0,1,-26),
+        Text="MeisterUI  |  meister",TextColor3=Color3.fromRGB(40,40,60),Font=Enum.Font.Gotham,TextSize=11})
+
+    -- Shake animation
+    local function Shake()
+        local orig=Card.Position
+        for i=1,8 do
+            Card.Position=orig+UDim2.fromOffset(i%2==0 and 8 or -8,0)
+            task.wait(0.035)
+        end
+        Card.Position=orig
+    end
+
+    -- Pulse stroke on focus
+    IBox.Focused:Connect(function()
+        TweenService:Create(Stroke,TweenInfo.new(0.2),{Color=Color3.fromRGB(210,35,35),Thickness=1.5}):Play()
+    end)
+    IBox.FocusLost:Connect(function()
+        TweenService:Create(Stroke,TweenInfo.new(0.2),{Color=Color3.fromRGB(50,50,70),Thickness=1}):Play()
+    end)
+
+    -- Get Key
+    BtnGet.MouseButton1Click:Connect(function()
+        pcall(function() setclipboard(linkURL) end)
+        Status.TextColor3=Color3.fromRGB(60,210,100)
+        Status.Text="Link copied to clipboard!"
+    end)
+
+    -- Validate key
+    local _done=false
+    local function TryKey()
+        if IBox.Text==validKey then
+            _done=true
+            Status.TextColor3=Color3.fromRGB(60,220,110)
+            Status.Text="Key accepted! Loading..."
+            TweenService:Create(Card,   TweenInfo.new(0.4,Enum.EasingStyle.Quart),{BackgroundTransparency=1}):Play()
+            TweenService:Create(Shadow, TweenInfo.new(0.4,Enum.EasingStyle.Quart),{BackgroundTransparency=1}):Play()
+            TweenService:Create(Overlay,TweenInfo.new(0.4,Enum.EasingStyle.Quart),{BackgroundTransparency=1}):Play()
+            task.delay(0.5,function() KGui:Destroy() end)
+        else
+            Status.TextColor3=Color3.fromRGB(220,50,50)
+            Status.Text="Wrong key! Click 'Get Key' to get yours."
+            task.spawn(Shake)
+        end
+    end
+
+    BtnSubmit.MouseButton1Click:Connect(TryKey)
+    IBox.FocusLost:Connect(function(enter) if enter then TryKey() end end)
+
+    -- Block until correct
+    repeat task.wait(0.05) until _done
+end
+
 return MeisterUI
