@@ -221,14 +221,13 @@ function MeisterUI:CreateWindow(options)
 
 
     -- Main UI Elements
-    local MainFrame = Instance.new("CanvasGroup")
+    local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenObject
     MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
     MainFrame.Position = UDim2.new(0.5, -325, 0.5, -200)
     MainFrame.Size = UDim2.new(0, 650, 0, 400)
     MainFrame.Visible = false
-    MainFrame.GroupTransparency = 1
 
     local MainCorner = Instance.new("UICorner")
     MainCorner.CornerRadius = UDim.new(0, 10)
@@ -346,7 +345,6 @@ function MeisterUI:CreateWindow(options)
         MainFrame.Visible = true
         MainFrame.Size = UDim2.new(0, 550, 0, 300)
         MainFrame.Position = UDim2.new(0.5, -275, 0.5, -150)
-        MainFrame.GroupTransparency = 1
         
         -- Use a task.delay failsafe in case Tweens get hung
         task.delay(1.5, function()
@@ -358,8 +356,7 @@ function MeisterUI:CreateWindow(options)
         local fadeBg = Utility:Tween(IntroOverlay, {0.8}, {BackgroundTransparency = 1})
         Utility:Tween(MainFrame, {0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
             Size = UDim2.new(0, 650, 0, 400), 
-            Position = UDim2.new(0.5, -325, 0.5, -200),
-            GroupTransparency = 0
+            Position = UDim2.new(0.5, -325, 0.5, -200)
         })
         
         fadeBg.Completed:Connect(function()
@@ -376,9 +373,9 @@ function MeisterUI:CreateWindow(options)
             WindowOpen = not WindowOpen
             if WindowOpen then
                 MainFrame.Visible = true
-                Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400), Position = UDim2.new(0.5, -325, 0.5, -200), GroupTransparency = 0})
+                Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400), Position = UDim2.new(0.5, -325, 0.5, -200)})
             else
-                local closeTween = Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In}, {Size = UDim2.new(0, 600, 0, 350), Position = UDim2.new(0.5, -300, 0.5, -175), GroupTransparency = 1})
+                local closeTween = Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In}, {Size = UDim2.new(0, 600, 0, 350), Position = UDim2.new(0.5, -300, 0.5, -175)})
                 closeTween.Completed:Connect(function()
                     if not WindowOpen then MainFrame.Visible = false end
                 end)
