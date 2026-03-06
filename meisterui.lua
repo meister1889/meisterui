@@ -208,16 +208,13 @@ function MeisterUI:CreateWindow(options)
     IntroOverlay.ZIndex = 100
     IntroOverlay.BackgroundTransparency = 1 -- Start transparent and fade to solid black
 
-    local IntroTitle = Instance.new("TextLabel")
+    local IntroTitle = Instance.new("ImageLabel")
     IntroTitle.Parent = IntroOverlay
     IntroTitle.BackgroundTransparency = 1
     IntroTitle.Position = UDim2.new(0.5, -300, 0.5, -50)
     IntroTitle.Size = UDim2.new(0, 600, 0, 100)
-    IntroTitle.Font = Enum.Font.Bangers
-    IntroTitle.Text = "meister"
-    IntroTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
-    IntroTitle.TextSize = 50
-    IntroTitle.TextTransparency = 1
+    IntroTitle.Image = "rbxassetid://129783995741936"
+    IntroTitle.ImageTransparency = 1
 
 
     -- Main UI Elements
@@ -306,13 +303,14 @@ function MeisterUI:CreateWindow(options)
     local MainTitle = Instance.new("TextLabel")
     MainTitle.Parent = Sidebar
     MainTitle.BackgroundTransparency = 1
-    MainTitle.Position = UDim2.new(0, 20, 0, 15)
-    MainTitle.Size = UDim2.new(1, -40, 0, 25)
+    MainTitle.Position = UDim2.new(0, 20, 0, 0)
+    MainTitle.Size = UDim2.new(1, -40, 0, 40)
     MainTitle.Font = Enum.Font.Ubuntu
     MainTitle.Text = WindowName
     MainTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
     MainTitle.TextSize = 18
     MainTitle.TextXAlignment = Enum.TextXAlignment.Left
+    MainTitle.TextYAlignment = Enum.TextYAlignment.Center
 
     local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
@@ -416,16 +414,23 @@ function MeisterUI:CreateWindow(options)
         Utility:Tween(IntroOverlay, {0.5}, {BackgroundTransparency = 0})
         task.wait(0.6)
         
-        -- 2. Fade in "meister" text and animate spacing 
-        Utility:Tween(IntroTitle, {1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {TextTransparency = 0})
+        -- 2. Fade in logo slowly 
+        Utility:Tween(IntroTitle, {1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {ImageTransparency = 0})
         
-        -- Simulate slight text tracking/scaling animation by tweening size and text size
-        local glowTween = Utility:Tween(IntroTitle, {1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut}, {TextSize = 54})
+        -- Simulate a slight pulsing animation by tweening the size and shifting position so it scales from the center
+        local glowTween = Utility:Tween(IntroTitle, {1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut}, {
+            Size = UDim2.new(0, 660, 0, 110), 
+            Position = UDim2.new(0.5, -330, 0.5, -55)
+        })
         
         task.wait(1.5)
         
-        -- 3. Fade out "meister" text
-        Utility:Tween(IntroTitle, {0.6}, {TextTransparency = 1, TextSize = 60})
+        -- 3. Fade out logo
+        Utility:Tween(IntroTitle, {0.6}, {
+            ImageTransparency = 1, 
+            Size = UDim2.new(0, 700, 0, 116), 
+            Position = UDim2.new(0.5, -350, 0.5, -58)
+        })
         task.wait(0.7)
         
         -- 4. Setup Main Hub to start small and then grow as background fades
@@ -459,7 +464,7 @@ function MeisterUI:CreateWindow(options)
             MainFrame.Visible = true
             Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400), Position = UDim2.new(0.5, -325, 0.5, -200)})
         else
-            local closeTween = Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In}, {Size = UDim2.new(0, 600, 0, 350), Position = UDim2.new(0.5, -300, 0.5, -175)})
+            local closeTween = Utility:Tween(MainFrame, {0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {Size = UDim2.new(0, 500, 0, 250), Position = UDim2.new(0.5, -250, 0.5, -125)})
             closeTween.Completed:Connect(function()
                 if not WindowOpen then MainFrame.Visible = false end
             end)
