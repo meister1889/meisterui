@@ -213,7 +213,8 @@ function MeisterUI:CreateWindow(options)
     IntroTitle.BackgroundTransparency = 1
     IntroTitle.Position = UDim2.new(0.5, -300, 0.5, -50)
     IntroTitle.Size = UDim2.new(0, 600, 0, 100)
-    IntroTitle.Image = "rbxassetid://129783995741936"
+    IntroTitle.Image = "rbxthumb://type=Asset&id=129783995741936&w=420&h=420"
+    IntroTitle.ScaleType = Enum.ScaleType.Fit
     IntroTitle.ImageTransparency = 1
 
 
@@ -256,6 +257,7 @@ function MeisterUI:CreateWindow(options)
     Sidebar.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
     Sidebar.Size = UDim2.new(0, 180, 1, 0)
     Sidebar.BorderSizePixel = 0
+    Sidebar.ClipsDescendants = true
     
     local SidebarCorner = Instance.new("UICorner")
     SidebarCorner.CornerRadius = UDim.new(0, 10)
@@ -343,6 +345,7 @@ function MeisterUI:CreateWindow(options)
     ProfileFrame.BackgroundTransparency = 1
     ProfileFrame.Position = UDim2.new(0, 10, 1, -60)
     ProfileFrame.Size = UDim2.new(1, -20, 0, 50)
+    ProfileFrame.ClipsDescendants = true
 
     local AvatarImage = Instance.new("ImageLabel")
     AvatarImage.Parent = ProfileFrame
