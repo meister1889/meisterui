@@ -118,7 +118,7 @@ function MeisterUI:Notify(options)
     NotifTitle.BackgroundTransparency = 1
     NotifTitle.Position = UDim2.new(0, 15, 0, 10)
     NotifTitle.Size = UDim2.new(1, -30, 0, 20)
-    NotifTitle.Font = Enum.Font.GothamBold
+    NotifTitle.Font = Enum.Font.Ubuntu
     NotifTitle.Text = title
     NotifTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
     NotifTitle.TextSize = 14
@@ -130,7 +130,7 @@ function MeisterUI:Notify(options)
     NotifText.BackgroundTransparency = 1
     NotifText.Position = UDim2.new(0, 15, 0, 32)
     NotifText.Size = UDim2.new(1, -30, 0, 40)
-    NotifText.Font = Enum.Font.Gotham
+    NotifText.Font = Enum.Font.Ubuntu
     NotifText.Text = content
     NotifText.TextColor3 = Color3.fromRGB(180, 180, 180)
     NotifText.TextSize = 13
@@ -163,7 +163,7 @@ function MeisterUI:Notify(options)
     ProgressBarCorner.Parent = ProgressBar
 
     -- Calculate Height
-    local bounds = TextService:GetTextSize(content, 13, Enum.Font.Gotham, Vector2.new(270, math.huge))
+    local bounds = TextService:GetTextSize(content, 13, Enum.Font.Ubuntu, Vector2.new(270, math.huge))
     local totalHeight = 55 + bounds.Y
     
     -- Animate In
@@ -213,7 +213,7 @@ function MeisterUI:CreateWindow(options)
     IntroTitle.BackgroundTransparency = 1
     IntroTitle.Position = UDim2.new(0.5, -300, 0.5, -50)
     IntroTitle.Size = UDim2.new(0, 600, 0, 100)
-    IntroTitle.Font = Enum.Font.PermanentMarker
+    IntroTitle.Font = Enum.Font.Bangers
     IntroTitle.Text = "meister"
     IntroTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
     IntroTitle.TextSize = 50
@@ -290,7 +290,7 @@ function MeisterUI:CreateWindow(options)
     CloseBtn.BackgroundTransparency = 1
     CloseBtn.Position = UDim2.new(1, -40, 0, 0)
     CloseBtn.Size = UDim2.new(0, 40, 1, 0)
-    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.Font = Enum.Font.Ubuntu
     CloseBtn.Text = "X"
     CloseBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
     CloseBtn.TextSize = 14
@@ -308,7 +308,7 @@ function MeisterUI:CreateWindow(options)
     MainTitle.BackgroundTransparency = 1
     MainTitle.Position = UDim2.new(0, 20, 0, 15)
     MainTitle.Size = UDim2.new(1, -40, 0, 25)
-    MainTitle.Font = Enum.Font.GothamBold
+    MainTitle.Font = Enum.Font.Ubuntu
     MainTitle.Text = WindowName
     MainTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
     MainTitle.TextSize = 18
@@ -320,7 +320,7 @@ function MeisterUI:CreateWindow(options)
     TabContainer.Active = true
     TabContainer.BackgroundTransparency = 1
     TabContainer.Position = UDim2.new(0, 0, 0, 60)
-    TabContainer.Size = UDim2.new(1, 0, 1, -70)
+    TabContainer.Size = UDim2.new(1, 0, 1, -130)
     TabContainer.ScrollBarThickness = 0
     
     local TabList = Instance.new("UIListLayout")
@@ -333,6 +333,75 @@ function MeisterUI:CreateWindow(options)
     TabPadding.PaddingTop = UDim.new(0, 5)
     TabPadding.PaddingLeft = UDim.new(0, 10)
     TabPadding.PaddingRight = UDim.new(0, 10)
+
+    -- Player Profile
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local MarketplaceService = game:GetService("MarketplaceService")
+
+    local ProfileFrame = Instance.new("Frame")
+    ProfileFrame.Name = "ProfileFrame"
+    ProfileFrame.Parent = Sidebar
+    ProfileFrame.BackgroundTransparency = 1
+    ProfileFrame.Position = UDim2.new(0, 10, 1, -60)
+    ProfileFrame.Size = UDim2.new(1, -20, 0, 50)
+
+    local AvatarImage = Instance.new("ImageLabel")
+    AvatarImage.Parent = ProfileFrame
+    AvatarImage.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    AvatarImage.Size = UDim2.new(0, 34, 0, 34)
+    AvatarImage.Position = UDim2.new(0, 0, 0.5, -17)
+    local AvatarCorner = Instance.new("UICorner")
+    AvatarCorner.CornerRadius = UDim.new(1, 0)
+    AvatarCorner.Parent = AvatarImage
+    
+    local NameLab = Instance.new("TextLabel")
+    NameLab.Parent = ProfileFrame
+    NameLab.BackgroundTransparency = 1
+    NameLab.Position = UDim2.new(0, 42, 0, 8)
+    NameLab.Size = UDim2.new(1, -42, 0, 16)
+    NameLab.Font = Enum.Font.Ubuntu
+    NameLab.Text = LocalPlayer and LocalPlayer.Name or "Unknown"
+    NameLab.TextColor3 = Color3.fromRGB(240, 240, 240)
+    NameLab.TextSize = 13
+    NameLab.TextXAlignment = Enum.TextXAlignment.Left
+    NameLab.TextTruncate = Enum.TextTruncate.AtEnd
+
+    local GameLab = Instance.new("TextLabel")
+    GameLab.Parent = ProfileFrame
+    GameLab.BackgroundTransparency = 1
+    GameLab.Position = UDim2.new(0, 42, 0, 24)
+    GameLab.Size = UDim2.new(1, -42, 0, 14)
+    GameLab.Font = Enum.Font.Ubuntu
+    GameLab.Text = "Loading..."
+    GameLab.TextColor3 = Color3.fromRGB(150, 150, 150)
+    GameLab.TextSize = 11
+    GameLab.TextXAlignment = Enum.TextXAlignment.Left
+    GameLab.TextTruncate = Enum.TextTruncate.AtEnd
+
+    -- Fetch Avatar
+    task.spawn(function()
+        if LocalPlayer then
+            local success, avatarUrl = pcall(function()
+                return Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+            end)
+            if success then
+                AvatarImage.Image = avatarUrl
+            end
+        end
+    end)
+
+    -- Fetch Game Name
+    task.spawn(function()
+        local success, info = pcall(function()
+            return MarketplaceService:GetProductInfo(game.PlaceId)
+        end)
+        if success and info and info.Name then
+            GameLab.Text = info.Name
+        else
+            GameLab.Text = "Unknown Game"
+        end
+    end)
 
     -- Content Area
     local ContentArea = Instance.new("Frame")
@@ -423,7 +492,7 @@ function MeisterUI:CreateWindow(options)
         TabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
         TabBtn.BackgroundTransparency = 1
         TabBtn.Size = UDim2.new(1, 0, 0, 36)
-        TabBtn.Font = Enum.Font.GothamSemibold
+        TabBtn.Font = Enum.Font.Ubuntu
         TabBtn.Text = "   " .. tabName
         TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
         TabBtn.TextSize = 14
@@ -533,7 +602,7 @@ function MeisterUI:CreateWindow(options)
             BtnText.BackgroundTransparency = 1
             BtnText.Position = UDim2.new(0, 15, 0, 0)
             BtnText.Size = UDim2.new(1, -30, 1, 0)
-            BtnText.Font = Enum.Font.GothamSemibold
+            BtnText.Font = Enum.Font.Ubuntu
             BtnText.Text = name
             BtnText.TextColor3 = Color3.fromRGB(220, 220, 220)
             BtnText.TextSize = 14
@@ -601,7 +670,7 @@ function MeisterUI:CreateWindow(options)
             TglText.BackgroundTransparency = 1
             TglText.Position = UDim2.new(0, 15, 0, 0)
             TglText.Size = UDim2.new(1, -60, 1, 0)
-            TglText.Font = Enum.Font.GothamSemibold
+            TglText.Font = Enum.Font.Ubuntu
             TglText.Text = name
             TglText.TextColor3 = Color3.fromRGB(220, 220, 220)
             TglText.TextSize = 14
@@ -688,18 +757,19 @@ function MeisterUI:CreateWindow(options)
             TitleLab.BackgroundTransparency = 1
             TitleLab.Position = UDim2.new(0, 15, 0, 10)
             TitleLab.Size = UDim2.new(1, -30, 0, 20)
-            TitleLab.Font = Enum.Font.GothamSemibold
+            TitleLab.Font = Enum.Font.Ubuntu
             TitleLab.Text = name
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
+            TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
 
             local ValueLab = Instance.new("TextLabel")
             ValueLab.Parent = SliderFrame
             ValueLab.BackgroundTransparency = 1
             ValueLab.Position = UDim2.new(0, 15, 0, 10)
             ValueLab.Size = UDim2.new(1, -30, 0, 20)
-            ValueLab.Font = Enum.Font.Gotham
+            ValueLab.Font = Enum.Font.Ubuntu
             ValueLab.Text = tostring(default)
             ValueLab.TextColor3 = Color3.fromRGB(150, 150, 150)
             ValueLab.TextSize = 14
@@ -800,11 +870,12 @@ function MeisterUI:CreateWindow(options)
             TitleLab.BackgroundTransparency = 1
             TitleLab.Position = UDim2.new(0, 15, 0, 0)
             TitleLab.Size = UDim2.new(1, -60, 0, 42)
-            TitleLab.Font = Enum.Font.GothamSemibold
+            TitleLab.Font = Enum.Font.Ubuntu
             TitleLab.Text = name .. " : " .. tostring(current)
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
+            TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
 
             local DropIcon = Instance.new("ImageLabel")
             DropIcon.Parent = DropFrame
@@ -841,7 +912,7 @@ function MeisterUI:CreateWindow(options)
                     OptionBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
                     OptionBtn.BackgroundTransparency = 1
                     OptionBtn.Size = UDim2.new(1, 0, 0, 32)
-                    OptionBtn.Font = Enum.Font.Gotham
+                    OptionBtn.Font = Enum.Font.Ubuntu
                     OptionBtn.Text = "  " .. tostring(option)
                     OptionBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
                     OptionBtn.TextSize = 13
@@ -908,11 +979,12 @@ function MeisterUI:CreateWindow(options)
             TitleLab.BackgroundTransparency = 1
             TitleLab.Position = UDim2.new(0, 15, 0, 0)
             TitleLab.Size = UDim2.new(0.4, 0, 1, 0)
-            TitleLab.Font = Enum.Font.GothamSemibold
+            TitleLab.Font = Enum.Font.Ubuntu
             TitleLab.Text = name
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
+            TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
 
             local TextBoxBG = Instance.new("Frame")
             TextBoxBG.Parent = InputFrame
@@ -928,7 +1000,7 @@ function MeisterUI:CreateWindow(options)
             TextBox.BackgroundTransparency = 1
             TextBox.Size = UDim2.new(1, -10, 1, 0)
             TextBox.Position = UDim2.new(0, 5, 0, 0)
-            TextBox.Font = Enum.Font.Gotham
+            TextBox.Font = Enum.Font.Ubuntu
             TextBox.Text = ""
             TextBox.PlaceholderText = placeholder
             TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
