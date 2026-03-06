@@ -443,6 +443,19 @@ function MeisterUI:CreateWindow(options)
     ContentArea.Size = UDim2.new(1, -181, 1, -35)
 
     task.spawn(function()
+        -- 0. Fetch true Image ID if user provided a Decal ID
+        local customImage = "rbxassetid://129783995741936"
+        pcall(function()
+            local get_obj = getobjects or game.GetObjects
+            if get_obj then
+                local asset = get_obj(game, customImage)[1]
+                if asset and asset:IsA("Decal") and asset.Texture then
+                    customImage = asset.Texture
+                end
+            end
+        end)
+        IntroTitle.Image = customImage
+
         -- 1. Full black screen fade in
         Utility:Tween(IntroOverlay, {0.5}, {BackgroundTransparency = 0})
         task.wait(0.6)
