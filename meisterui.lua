@@ -221,14 +221,14 @@ function MeisterUI:CreateWindow(options)
 
 
     -- Main UI Elements
-    local MainFrame = Instance.new("Frame")
+    local MainFrame = Instance.new("CanvasGroup")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenObject
     MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
-    MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+    MainFrame.Position = UDim2.new(0.5, -325, 0.5, -200)
     MainFrame.Size = UDim2.new(0, 650, 0, 400)
-    MainFrame.ClipsDescendants = false
     MainFrame.Visible = false
+    MainFrame.GroupTransparency = 1
 
     local MainCorner = Instance.new("UICorner")
     MainCorner.CornerRadius = UDim.new(0, 10)
@@ -325,7 +325,6 @@ function MeisterUI:CreateWindow(options)
     ContentArea.Position = UDim2.new(0, 181, 0, 40)
     ContentArea.Size = UDim2.new(1, -181, 1, -40)
 
-    -- Intro Animation Play
     task.spawn(function()
         -- 1. Full black screen fade in
         Utility:Tween(IntroOverlay, {0.5}, {BackgroundTransparency = 0})
@@ -346,12 +345,25 @@ function MeisterUI:CreateWindow(options)
         -- 4. Setup Main Hub to start small and then grow as background fades
         MainFrame.Visible = true
         MainFrame.Size = UDim2.new(0, 550, 0, 300)
+        MainFrame.Position = UDim2.new(0.5, -275, 0.5, -150)
+        MainFrame.GroupTransparency = 1
+        
+        -- Use a task.delay failsafe in case Tweens get hung
+        task.delay(1.5, function()
+            if IntroOverlay and IntroOverlay.Parent then
+                IntroOverlay:Destroy()
+            end
+        end)
         
         local fadeBg = Utility:Tween(IntroOverlay, {0.8}, {BackgroundTransparency = 1})
-        Utility:Tween(MainFrame, {0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400)})
+        Utility:Tween(MainFrame, {0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
+            Size = UDim2.new(0, 650, 0, 400), 
+            Position = UDim2.new(0.5, -325, 0.5, -200),
+            GroupTransparency = 0
+        })
         
         fadeBg.Completed:Connect(function()
-            IntroOverlay:Destroy()
+            if IntroOverlay and IntroOverlay.Parent then IntroOverlay:Destroy() end
             WindowOpen = true
             MeisterUI:Notify({Title = "Loaded", Content = "meister module loaded successfully.", Duration = 4})
         end)
@@ -360,13 +372,13 @@ function MeisterUI:CreateWindow(options)
     -- Toggle Logic
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
-        if input.KeyCode == HideKey and IntroOverlay.Parent == nil then
+        if input.KeyCode == HideKey and not ParentGui:FindFirstChild("IntroOverlay") then
             WindowOpen = not WindowOpen
             if WindowOpen then
                 MainFrame.Visible = true
-                Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400)})
+                Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400), Position = UDim2.new(0.5, -325, 0.5, -200), GroupTransparency = 0})
             else
-                local closeTween = Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In}, {Size = UDim2.new(0, 600, 0, 350)})
+                local closeTween = Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In}, {Size = UDim2.new(0, 600, 0, 350), Position = UDim2.new(0.5, -300, 0.5, -175), GroupTransparency = 1})
                 closeTween.Completed:Connect(function()
                     if not WindowOpen then MainFrame.Visible = false end
                 end)
