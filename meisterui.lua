@@ -211,12 +211,12 @@ function MeisterUI:CreateWindow(options)
     local IntroTitle = Instance.new("TextLabel")
     IntroTitle.Parent = IntroOverlay
     IntroTitle.BackgroundTransparency = 1
-    IntroTitle.Position = UDim2.new(0.5, -300, 0.5, -50)
-    IntroTitle.Size = UDim2.new(0, 600, 0, 100)
-    IntroTitle.Font = Enum.Font.GothamBlack
+    IntroTitle.Position = UDim2.new(0.5, -200, 0.5, -40)
+    IntroTitle.Size = UDim2.new(0, 400, 0, 80)
+    IntroTitle.Font = Enum.Font.Jura
     IntroTitle.Text = "MEISTER"
     IntroTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
-    IntroTitle.TextSize = 50
+    IntroTitle.TextScaled = true
     IntroTitle.TextTransparency = 1
 
 
@@ -453,12 +453,19 @@ function MeisterUI:CreateWindow(options)
         Utility:Tween(IntroTitle, {1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {TextTransparency = 0})
         
         -- Pulse text size animation
-        local glowTween = Utility:Tween(IntroTitle, {1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut}, {TextSize = 56})
+        local glowTween = Utility:Tween(IntroTitle, {1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut}, {
+            Size = UDim2.new(0, 480, 0, 96), 
+            Position = UDim2.new(0.5, -240, 0.5, -48)
+        })
         
         task.wait(1.5)
         
         -- 3. Fade out text
-        Utility:Tween(IntroTitle, {0.6}, {TextTransparency = 1, TextSize = 65})
+        Utility:Tween(IntroTitle, {0.6}, {
+            TextTransparency = 1, 
+            Size = UDim2.new(0, 600, 0, 120), 
+            Position = UDim2.new(0.5, -300, 0.5, -60)
+        })
         task.wait(0.7)
         
         -- 4. Setup Main Hub to start small and then grow as background fades
