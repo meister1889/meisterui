@@ -213,7 +213,7 @@ function MeisterUI:CreateWindow(options)
     IntroTitle.BackgroundTransparency = 1
     IntroTitle.Position = UDim2.new(0.5, -200, 0.5, -40)
     IntroTitle.Size = UDim2.new(0, 400, 0, 80)
-    IntroTitle.Font = Enum.Font.Jura
+    IntroTitle.Font = Enum.Font.Code
     IntroTitle.Text = "MEISTER"
     IntroTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
     IntroTitle.TextScaled = true
@@ -353,7 +353,8 @@ function MeisterUI:CreateWindow(options)
     TabContainer.BackgroundTransparency = 1
     TabContainer.Position = UDim2.new(0, 0, 0, 10)
     TabContainer.Size = UDim2.new(1, 0, 1, -80)
-    TabContainer.ScrollBarThickness = 0
+    TabContainer.ScrollBarThickness = 2
+    TabContainer.ScrollBarImageColor3 = Color3.fromRGB(50, 50, 55)
     
     local TabList = Instance.new("UIListLayout")
     TabList.Parent = TabContainer
