@@ -1062,21 +1062,31 @@ function MeisterUI:CreateWindow(options)
 
         -- DROPDOWN
         function Elements:CreateDropdown(options)
-            local name = options.Name or "Dropdown"
-            local list = options.Options or {}
-            local current = options.CurrentOption or ""
+            local name    = options.Name or "Dropdown"
+            local list    = options.Options or {}
+            local current = options.CurrentOption or (list[1] or "")
             local callback = options.Callback or function() end
 
+            -- Wrapper: sabit yükseklikteki "header" şeridi
+            local DropOuter = Instance.new("Frame")
+            DropOuter.Parent = TabPage
+            DropOuter.BackgroundTransparency = 1
+            DropOuter.Size = UDim2.new(1, 0, 0, 42)
+            DropOuter.ClipsDescendants = false
+            DropOuter.ZIndex = 10
+
+            -- Header kutusu
             local DropFrame = Instance.new("Frame")
-            DropFrame.Parent = TabPage
+            DropFrame.Parent = DropOuter
             DropFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             DropFrame.Size = UDim2.new(1, 0, 0, 42)
-            DropFrame.ClipsDescendants = true
-            
+            DropFrame.ClipsDescendants = false
+            DropFrame.ZIndex = 10
+
             local DCorner = Instance.new("UICorner")
             DCorner.CornerRadius = UDim.new(0, 6)
             DCorner.Parent = DropFrame
-            
+
             local DStroke = Instance.new("UIStroke")
             DStroke.Parent = DropFrame
             DStroke.Color = Color3.fromRGB(45, 45, 50)
@@ -1085,96 +1095,187 @@ function MeisterUI:CreateWindow(options)
             local DropBtn = Instance.new("TextButton")
             DropBtn.Parent = DropFrame
             DropBtn.BackgroundTransparency = 1
-            DropBtn.Size = UDim2.new(1, 0, 0, 42)
+            DropBtn.Size = UDim2.new(1, 0, 1, 0)
             DropBtn.Text = ""
+            DropBtn.ZIndex = 12
 
             local TitleLab = Instance.new("TextLabel")
             TitleLab.Parent = DropFrame
             TitleLab.BackgroundTransparency = 1
             TitleLab.Position = UDim2.new(0, 15, 0, 0)
-            TitleLab.Size = UDim2.new(1, -60, 0, 42)
+            TitleLab.Size = UDim2.new(1, -60, 1, 0)
             TitleLab.Font = Enum.Font.Ubuntu
-            TitleLab.Text = name .. " : " .. tostring(current)
+            TitleLab.Text = name .. "  ›  " .. tostring(current)
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
             TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
+            TitleLab.ZIndex = 11
 
-            local DropIcon = Instance.new("ImageLabel")
-            DropIcon.Parent = DropFrame
-            DropIcon.BackgroundTransparency = 1
-            DropIcon.Position = UDim2.new(1, -30, 0, 13)
-            DropIcon.Size = UDim2.new(0, 16, 0, 16)
-            DropIcon.Image = "rbxassetid://10888331510"
-            DropIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
-            DropIcon.Rotation = 90
+            local ArrowLab = Instance.new("TextLabel")
+            ArrowLab.Parent = DropFrame
+            ArrowLab.BackgroundTransparency = 1
+            ArrowLab.Position = UDim2.new(1, -32, 0, 0)
+            ArrowLab.Size = UDim2.new(0, 24, 1, 0)
+            ArrowLab.Font = Enum.Font.Ubuntu
+            ArrowLab.Text = "▼"
+            ArrowLab.TextColor3 = Color3.fromRGB(150, 150, 150)
+            ArrowLab.TextSize = 12
+            ArrowLab.ZIndex = 11
 
-            local ListContainer = Instance.new("ScrollingFrame")
-            ListContainer.Parent = DropFrame
-            ListContainer.BackgroundTransparency = 1
-            ListContainer.Position = UDim2.new(0, 0, 0, 42)
-            ListContainer.Size = UDim2.new(1, 0, 1, -42)
-            ListContainer.ScrollBarThickness = 2
-            ListContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-            
+            -- Liste paneli (header'ın hemen altında, diğer elemanların ÜSTÜNDEKİ katmanda)
+            local ListPanel = Instance.new("Frame")
+            ListPanel.Parent = DropFrame
+            ListPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+            ListPanel.Position = UDim2.new(0, 0, 1, 4)
+            ListPanel.Size = UDim2.new(1, 0, 0, 0)
+            ListPanel.ClipsDescendants = true
+            ListPanel.ZIndex = 50
+            ListPanel.Visible = false
+
+            local LCorner = Instance.new("UICorner")
+            LCorner.CornerRadius = UDim.new(0, 6)
+            LCorner.Parent = ListPanel
+
+            local LStroke = Instance.new("UIStroke")
+            LStroke.Parent = ListPanel
+            LStroke.Color = Color3.fromRGB(55, 55, 62)
+            LStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+            local ListScroll = Instance.new("ScrollingFrame")
+            ListScroll.Parent = ListPanel
+            ListScroll.BackgroundTransparency = 1
+            ListScroll.Size = UDim2.new(1, 0, 1, 0)
+            ListScroll.ScrollBarThickness = 2
+            ListScroll.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 65)
+            ListScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+            ListScroll.ZIndex = 51
+
             local ListLayout = Instance.new("UIListLayout")
-            ListLayout.Parent = ListContainer
+            ListLayout.Parent = ListScroll
             ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            
-            local expanded = false
 
-            local function refreshList()
-                for _, v in pairs(ListContainer:GetChildren()) do
+            local ListPad = Instance.new("UIPadding")
+            ListPad.Parent = ListScroll
+            ListPad.PaddingTop = UDim.new(0, 4)
+            ListPad.PaddingBottom = UDim.new(0, 4)
+
+            local expanded = false
+            local ITEM_H = 34
+
+            local function buildList()
+                for _, v in pairs(ListScroll:GetChildren()) do
                     if v:IsA("TextButton") then v:Destroy() end
                 end
-                
-                local ySize = 0
-                for _, option in pairs(list) do
-                    local OptionBtn = Instance.new("TextButton")
-                    OptionBtn.Parent = ListContainer
-                    OptionBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-                    OptionBtn.BackgroundTransparency = 1
-                    OptionBtn.Size = UDim2.new(1, 0, 0, 32)
-                    OptionBtn.Font = Enum.Font.Ubuntu
-                    OptionBtn.Text = "  " .. tostring(option)
-                    OptionBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-                    OptionBtn.TextSize = 13
-                    OptionBtn.TextXAlignment = Enum.TextXAlignment.Left
-                    OptionBtn.AutoButtonColor = false
+                for _, option in ipairs(list) do
+                    local isCurrent = tostring(option) == tostring(current)
+                    local Opt = Instance.new("TextButton")
+                    Opt.Parent = ListScroll
+                    Opt.BackgroundColor3 = isCurrent and Color3.fromRGB(50, 50, 58) or Color3.fromRGB(30, 30, 36)
+                    Opt.BackgroundTransparency = isCurrent and 0 or 1
+                    Opt.Size = UDim2.new(1, 0, 0, ITEM_H)
+                    Opt.Font = Enum.Font.Ubuntu
+                    Opt.Text = "  " .. (isCurrent and "▶  " or "    ") .. tostring(option)
+                    Opt.TextColor3 = isCurrent and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 185)
+                    Opt.TextSize = 13
+                    Opt.TextXAlignment = Enum.TextXAlignment.Left
+                    Opt.AutoButtonColor = false
+                    Opt.ZIndex = 52
 
-                    OptionBtn.MouseEnter:Connect(function()
-                        Utility:Tween(OptionBtn, {0.1}, {BackgroundTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)})
+                    Opt.MouseEnter:Connect(function()
+                        if not isCurrent then
+                            Utility:Tween(Opt, {0.12}, {BackgroundTransparency = 0, BackgroundColor3 = Color3.fromRGB(42, 42, 50), TextColor3 = Color3.fromRGB(240, 240, 240)})
+                        end
                     end)
-                    OptionBtn.MouseLeave:Connect(function()
-                        Utility:Tween(OptionBtn, {0.1}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180)})
+                    Opt.MouseLeave:Connect(function()
+                        if not isCurrent then
+                            Utility:Tween(Opt, {0.12}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 185)})
+                        end
                     end)
-
-                    OptionBtn.MouseButton1Click:Connect(function()
+                    Opt.MouseButton1Click:Connect(function()
                         current = option
-                        TitleLab.Text = name .. " : " .. tostring(current)
+                        TitleLab.Text = name .. "  ›  " .. tostring(current)
                         expanded = false
-                        Utility:Tween(DropFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 42)})
-                        Utility:Tween(DropIcon, {0.3}, {Rotation = 90})
+                        Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 0)})
+                        Utility:Tween(ArrowLab, {0.2}, {Rotation = 0})
+                        task.wait(0.28)
+                        ListPanel.Visible = false
+                        buildList()
                         callback(current)
                     end)
-                    ySize = ySize + 32
                 end
-                ListContainer.CanvasSize = UDim2.new(0, 0, 0, ySize)
+                local total = #list * ITEM_H + 8
+                ListScroll.CanvasSize = UDim2.new(0, 0, 0, total)
             end
-            
-            refreshList()
 
-            DropBtn.MouseButton1Click:Connect(function()
+            buildList()
+
+            local function toggleDropdown()
                 expanded = not expanded
                 if expanded then
-                    local targetHeight = math.clamp(42 + (#list * 32), 42, 170)
-                    Utility:Tween(DropFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, targetHeight)})
-                    Utility:Tween(DropIcon, {0.3}, {Rotation = -90})
+                    local panelH = math.clamp(#list * ITEM_H + 8, 0, 180)
+                    ListPanel.Visible = true
+                    ListPanel.Size = UDim2.new(1, 0, 0, 0)
+                    Utility:Tween(ListPanel, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, panelH)})
+                    Utility:Tween(ArrowLab, {0.25}, {Rotation = 180})
+                    Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(38, 38, 44)})
                 else
-                    Utility:Tween(DropFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 42)})
-                    Utility:Tween(DropIcon, {0.3}, {Rotation = 90})
+                    Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 0)})
+                    Utility:Tween(ArrowLab, {0.2}, {Rotation = 0})
+                    Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
+                    task.wait(0.28)
+                    if not expanded then ListPanel.Visible = false end
+                end
+            end
+
+            DropBtn.MouseButton1Click:Connect(toggleDropdown)
+
+            DropFrame.MouseEnter:Connect(function()
+                if not expanded then Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(36, 36, 42)}) end
+            end)
+            DropFrame.MouseLeave:Connect(function()
+                if not expanded then Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}) end
+            end)
+
+            -- Dışarıda bir yere tıklanınca otomatik kapat
+            UserInputService.InputBegan:Connect(function(input)
+                if expanded and input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    local pos = input.Position
+                    local panelPos = ListPanel.AbsolutePosition
+                    local panelSz  = ListPanel.AbsoluteSize
+                    local headPos  = DropFrame.AbsolutePosition
+                    local headSz   = DropFrame.AbsoluteSize
+                    local inHead   = pos.X >= headPos.X and pos.X <= headPos.X + headSz.X and pos.Y >= headPos.Y and pos.Y <= headPos.Y + headSz.Y
+                    local inPanel  = pos.X >= panelPos.X and pos.X <= panelPos.X + panelSz.X and pos.Y >= panelPos.Y and pos.Y <= panelPos.Y + panelSz.Y
+                    if not inHead and not inPanel then
+                        task.spawn(function()
+                            expanded = false
+                            Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 0)})
+                            Utility:Tween(ArrowLab, {0.2}, {Rotation = 0})
+                            Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
+                            task.wait(0.28)
+                            ListPanel.Visible = false
+                        end)
+                    end
                 end
             end)
+
+            -- Dışarıya referans ver: seçimi programatik güncelle
+            local DropAPI = {}
+            function DropAPI:Set(option)
+                current = option
+                TitleLab.Text = name .. "  ›  " .. tostring(current)
+                buildList()
+                callback(current)
+            end
+            function DropAPI:GetSelected()
+                return current
+            end
+            function DropAPI:Refresh(newList)
+                list = newList
+                buildList()
+            end
+            return DropAPI
         end
 
         -- INPUT / TEXTBOX
