@@ -360,12 +360,17 @@ function MeisterUI:CreateWindow(options)
     TabList.Parent = TabContainer
     TabList.SortOrder = Enum.SortOrder.LayoutOrder
     TabList.Padding = UDim.new(0, 5)
-    
+
     local TabPadding = Instance.new("UIPadding")
     TabPadding.Parent = TabContainer
     TabPadding.PaddingTop = UDim.new(0, 5)
     TabPadding.PaddingLeft = UDim.new(0, 10)
     TabPadding.PaddingRight = UDim.new(0, 10)
+
+    -- BUG FIX: CanvasSize tablar eklendikce guncellenir, yoksa tablar gorunmez
+    TabList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabList.AbsoluteContentSize.Y + 15)
+    end)
 
     -- Player Profile
     local Players = game:GetService("Players")
