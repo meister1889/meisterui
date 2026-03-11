@@ -1714,7 +1714,7 @@ function MeisterUI:KeySystem(config)
         B.BorderSizePixel  = 0
         B.AutoButtonColor  = false
         B.Font             = Enum.Font.Ubuntu
-        B.Text             = isPrimary and ("   "..text) or text
+        B.Text             = "   "..text
         B.TextColor3       = isPrimary and Color3.fromRGB(220,220,220) or Color3.fromRGB(150,150,150)
         B.TextSize         = 13
         B.TextXAlignment   = Enum.TextXAlignment.Left
@@ -1798,7 +1798,7 @@ function MeisterUI:KeySystem(config)
     -- Validate key
     local _done = false
     local function TryKey()
-        if IBox.Text == validKey then
+        if string.gsub(IBox.Text, "%s+", "") == string.gsub(validKey, "%s+", "") then
             _done = true
             StatusLb.TextColor3 = Color3.fromRGB(130,190,130)
             StatusLb.Text = "Key accepted. Loading..."
